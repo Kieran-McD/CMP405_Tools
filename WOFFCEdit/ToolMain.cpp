@@ -289,10 +289,14 @@ void ToolMain::Tick(MSG *msg)
 
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);
+
+	m_toolInputCommands.mouseXDrag = 0;
+	m_toolInputCommands.mouseYDrag = 0;
 }
 
 void ToolMain::UpdateInput(MSG * msg)
 {
+
 
 	switch (msg->message)
 	{
@@ -306,13 +310,31 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 
 	case WM_MOUSEMOVE:
+		m_toolInputCommands.mouseXDrag = msg->pt.x - m_toolInputCommands.mouseX ;
+		m_toolInputCommands.mouseYDrag = msg->pt.y - m_toolInputCommands.mouseY;
 		break;
-
+	case WM_MOUSEHOVER:
+		break;
 	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
 		//set some flag for the mouse button in inputcommands
+		m_toolInputCommands.mouseLeftButton = true;
 		break;
-
+	case WM_LBUTTONUP:
+		m_toolInputCommands.mouseLeftButton = false;
+		break;
+	case WM_RBUTTONDOWN:
+		m_toolInputCommands.mouseRightButton = true;
+		break;
+	case WM_RBUTTONUP:
+		m_toolInputCommands.mouseRightButton = false;
+		break;
+	case WM_NCMOUSELEAVE:
+		m_toolInputCommands.mouseRightButton = false;
+		m_toolInputCommands.mouseLeftButton = false;
 	}
+	
+	m_toolInputCommands.mouseX = msg->pt.x;
+	m_toolInputCommands.mouseY = msg->pt.y;
 	//here we update all the actual app functionality that we want.  This information will either be used int toolmain, or sent down to the renderer (Camera movement etc
 	//WASD movement
 	if (m_keyArray['W'])
@@ -340,14 +362,14 @@ void ToolMain::UpdateInput(MSG * msg)
 	//rotation
 	if (m_keyArray['E'])
 	{
-		m_toolInputCommands.rotRight = true;
+		m_toolInputCommands.up = true;
 	}
-	else m_toolInputCommands.rotRight = false;
+	else m_toolInputCommands.up = false;
 	if (m_keyArray['Q'])
 	{
-		m_toolInputCommands.rotLeft = true;
+		m_toolInputCommands.down = true;
 	}
-	else m_toolInputCommands.rotLeft = false;
+	else m_toolInputCommands.down = false;
 
 	//WASD
 }

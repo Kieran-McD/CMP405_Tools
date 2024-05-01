@@ -12,7 +12,7 @@
 #include "ChunkObject.h"
 #include "InputCommands.h"
 #include <vector>
-
+#include "Camera.h"
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -79,6 +79,8 @@ private:
 	DirectX::SimpleMath::Vector3		m_camLookDirection;
 	DirectX::SimpleMath::Vector3		m_camRight;
 	float m_camRotRate;
+
+	Camera cam;
 
 	//control variables
 	bool m_grid;							//grid rendering on / off
