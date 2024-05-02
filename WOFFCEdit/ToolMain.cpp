@@ -310,8 +310,15 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 
 	case WM_MOUSEMOVE:
-		m_toolInputCommands.mouseXDrag = msg->pt.x - m_toolInputCommands.mouseX ;
-		m_toolInputCommands.mouseYDrag = msg->pt.y - m_toolInputCommands.mouseY;
+
+		
+		m_toolInputCommands.mouseXDrag = GET_X_LPARAM(msg->lParam) - m_toolInputCommands.mouseX;
+		m_toolInputCommands.mouseYDrag = GET_Y_LPARAM(msg->lParam) - m_toolInputCommands.mouseY;
+		if (m_toolInputCommands.mouseRightButton == true) {
+			
+		}
+		m_toolInputCommands.mouseX = GET_X_LPARAM(msg->lParam);
+		m_toolInputCommands.mouseY = GET_Y_LPARAM(msg->lParam);
 		break;
 	case WM_MOUSEHOVER:
 		break;
@@ -324,17 +331,18 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 	case WM_RBUTTONDOWN:
 		m_toolInputCommands.mouseRightButton = true;
+		ShowCursor(false);
 		break;
 	case WM_RBUTTONUP:
 		m_toolInputCommands.mouseRightButton = false;
+		ShowCursor(true);
 		break;
-	case WM_NCMOUSELEAVE:
+	case WM_MOUSELEAVE:
 		m_toolInputCommands.mouseRightButton = false;
 		m_toolInputCommands.mouseLeftButton = false;
 	}
 	
-	m_toolInputCommands.mouseX = msg->pt.x;
-	m_toolInputCommands.mouseY = msg->pt.y;
+
 	//here we update all the actual app functionality that we want.  This information will either be used int toolmain, or sent down to the renderer (Camera movement etc
 	//WASD movement
 	if (m_keyArray['W'])

@@ -139,21 +139,8 @@ void Game::Tick(InputCommands *Input)
 
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
-{
-    if (m_InputCommands.mouseRightButton) {
-
-        m_camOrientation.y += m_InputCommands.mouseXDrag;
-        m_camOrientation.x -= m_InputCommands.mouseYDrag;
-
-        //create look direction from Euler angles in m_camOrientation
-        m_camLookDirection.x = cos((m_camOrientation.y) * 3.1415 / 180) * cos(m_camOrientation.x * 3.1415 / 180);
-        m_camLookDirection.y = sin((m_camOrientation.x) * 3.1415 / 180);
-        m_camLookDirection.z = sin((m_camOrientation.y) * 3.1415 / 180) * cos(m_camOrientation.x * 3.1415 / 180);
-        m_camLookDirection.Normalize();
-
-        //create right vector from look Direction
-        m_camLookDirection.Cross(Vector3::UnitY, m_camRight);
-    }
+{   
+    Ray ray = Ray();
 
     cam.Update(m_InputCommands);
 
@@ -228,8 +215,7 @@ void Game::Render()
 															m_displayList[i].m_orientation.x *3.1415 / 180,
 															m_displayList[i].m_orientation.z *3.1415 / 180);
 
-		XMMATRIX local = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, scale, g_XMZero, rotate, translate);
-
+		XMMATRIX local = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, scale, g_XMZero, rotate, translate);       
 		m_displayList[i].m_model->Draw(context, *m_states, local, cam.GetViewMatrix(), m_projection, false);	//last variable in draw,  make TRUE for wireframe
 
 		m_deviceResources->PIXEndEvent();
