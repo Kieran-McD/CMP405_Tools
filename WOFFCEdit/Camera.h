@@ -16,6 +16,8 @@ public:
 	Matrix GetViewMatrix();
 private:
 	
+	void ArcBallMotion(InputCommands Input);
+
 	//functionality
 	float								m_movespeed;
 	float								m_camRotRate;

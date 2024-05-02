@@ -60,9 +60,10 @@ void Camera::Update(InputCommands Input)
 	if (Input.mouseRightButton) {
 
 
-		m_camOrientation.y += Input.mouseXDrag;
-		m_camOrientation.x -= Input.mouseYDrag;
-
+		/*m_camOrientation.y += Input.mouseXDrag;
+		m_camOrientation.x -= Input.mouseYDrag;*/
+		m_camLookAt = Vector3(0, 0, 0);
+		ArcBallMotion(Input);
 		//create look direction from Euler angles in m_camOrientation
 		m_camLookDirection.x = cos((m_camOrientation.y) * 3.1415 / 180) * cos(m_camOrientation.x * 3.1415 / 180);
 		m_camLookDirection.y = sin((m_camOrientation.x) * 3.1415 / 180);
@@ -99,13 +100,44 @@ void Camera::Update(InputCommands Input)
 		}
 
 		//update lookat point
-		m_camLookAt = m_camPosition + m_camLookDirection;
+		//m_camLookAt = m_camPosition + m_camLookDirection;
+
 	}
+
 	//apply camera vectors
-	m_view = Matrix::CreateLookAt(m_camPosition, m_camLookAt, Vector3::UnitY);
+	//m_view = Matrix::CreateLookAt(m_camPosition, m_camLookAt, Vector3::UnitY);
 }
+
+
 
 Matrix Camera::GetViewMatrix()
 {
 	return m_view;
+}
+
+void Camera::ArcBallMotion(InputCommands Input)
+{
+	// step 1 : Calculate the amount of rotation given the mouse movement.
+	float xAngle = m_camOrientation.x + Input.mouseYDrag * 3.1415 / 180;
+	float yAngle = m_camOrientation.y + Input.mouseXDrag * 3.1415 / 180;
+
+	// Get the homogenous position of the camera and pivot point
+	Vector4 position = Vector4(m_camPosition.x, m_camPosition.y, m_camPosition.z, 1);
+	Vector4 pivot = Vector4(m_camLookAt.x, m_camLookAt.y, m_camLookAt.z, 1);
+
+	// step 2: Rotate the camera around the pivot point on the first axis.
+	Matrix rotationMatrixX = Matrix::Identity;
+	rotationMatrixX = Matrix::CreateRotationX(xAngle);
+	position = Vector4::Transform((position - pivot), rotationMatrixX) + pivot;
+	
+	
+	// step 3: Rotate the camera around the pivot point on the second axis.
+	Matrix rotationMatrixY = Matrix::Identity;
+	rotationMatrixY = Matrix::CreateRotationY(yAngle);
+	Vector3 finalPosition = Vector3::Transform((Vector3(position.x, position.y, position.z) - Vector3(pivot.x, pivot.y, pivot.z)), rotationMatrixY) + pivot;
+	
+	m_view = Matrix::CreateLookAt(finalPosition, m_camLookAt, Vector3::UnitY);
+
+	m_camOrientation.x = xAngle;
+	m_camOrientation.y = yAngle;
 }
