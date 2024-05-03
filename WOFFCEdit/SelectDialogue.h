@@ -37,6 +37,9 @@ public:
 	CListBox m_listBox;
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
+	void DeSelect();
+	void DeleteSelected();
+
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnLbnSelchangeList1();
 };

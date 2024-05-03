@@ -7,6 +7,7 @@ BEGIN_MESSAGE_MAP(MFCMain, CWinApp)
 	ON_COMMAND(ID_FILE_SAVETERRAIN, &MFCMain::MenuFileSaveTerrain)
 	ON_COMMAND(ID_EDIT_SELECT, &MFCMain::MenuEditSelect)
 	ON_COMMAND(ID_BUTTON40001,	&MFCMain::ToolBarButton1)
+	ON_COMMAND(ID_BUTTON40007, & MFCMain::ToolBarButton2)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_TOOL, &CMyFrame::OnUpdatePage)
 END_MESSAGE_MAP()
 
@@ -62,10 +63,34 @@ int MFCMain::Run()
 
 		if (bGotMsg)
 		{
+
+
+
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 
 			m_ToolSystem.UpdateInput(&msg);
+
+			switch (msg.message)
+			{
+				//Global inputs,  mouse position and keys etc
+
+			case WM_RBUTTONDOWN:
+				//m_ToolSelectDialogue.DeSelect
+				if (m_ToolSelectDialogue) {
+					m_ToolSelectDialogue.DeSelect();
+				}
+				break;
+			case WM_KEYFIRST:
+				//Press Delete
+				if (msg.wParam == 46)
+				{
+					if (m_ToolSelectDialogue) {
+						m_ToolSelectDialogue.DeleteSelected();
+					}
+				}
+				break;
+			}
 		}
 		else
 		{	
@@ -98,20 +123,33 @@ void MFCMain::MenuEditSelect()
 	//m_ToolSelectDialogue.DoModal();	// start it up modal
 
 	//modeless dialogue must be declared in the class.   If we do local it will go out of scope instantly and destroy itself
-	m_ToolSelectDialogue.Create(IDD_DIALOG1);	//Start up modeless
-	m_ToolSelectDialogue.ShowWindow(SW_SHOW);	//show modeless
-	m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedObject);
+	
+	if (!m_ToolSelectDialogue) {
+		m_ToolSelectDialogue.Create(IDD_DIALOG1);	//Start up modeless
+		m_ToolSelectDialogue.ShowWindow(SW_SHOW);	//show modeless
+		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedObject);
+	}
+	else {
+		m_ToolSelectDialogue.ShowWindow(SW_SHOW);
+	}
+	
 }
 
 void MFCMain::ToolBarButton1()
-{
-	
+{	
 	m_ToolSystem.onActionSave();
 }
 
+void MFCMain::ToolBarButton2() {
+	m_ToolSystem.onActionLoad();
+	if (m_ToolSelectDialogue) {
+		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedObject);
+	}
+}
 
 MFCMain::MFCMain()
 {
+
 }
 
 

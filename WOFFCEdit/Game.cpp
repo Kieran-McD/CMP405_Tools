@@ -216,7 +216,7 @@ void Game::Render()
 															m_displayList[i].m_orientation.z *3.1415 / 180);
 
 		XMMATRIX local = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, scale, g_XMZero, rotate, translate);       
-		m_displayList[i].m_model->Draw(context, *m_states, local, cam.GetViewMatrix(), m_projection, false);	//last variable in draw,  make TRUE for wireframe
+		m_displayList[i].m_model->Draw(context, *m_states, local, cam.GetViewMatrix(), m_projection, false);	//last variable in draw,  make TRUE for wireframe       
 
 		m_deviceResources->PIXEndEvent();
 	}
@@ -349,6 +349,12 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 	auto device = m_deviceResources->GetD3DDevice();
 	auto devicecontext = m_deviceResources->GetD3DDeviceContext();
 
+    //Releases the m_texture_diffuse from memory
+    for (int i = 0; i < m_displayList.size();i++) {
+        m_displayList[i].m_texture_diffuse->Release();
+        m_displayList[i].m_texture_diffuse = NULL;
+    }
+
 	if (!m_displayList.empty())		//is the vector empty
 	{
 		m_displayList.clear();		//if not, empty it
@@ -368,9 +374,11 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 
 		//Load Texture
 		std::wstring texturewstr = StringToWCHART(SceneGraph->at(i).tex_diffuse_path);								//convect string to Wchar
-		HRESULT rs;
-		rs = CreateDDSTextureFromFile(device, texturewstr.c_str(), nullptr, &newDisplayObject.m_texture_diffuse);	//load tex into Shader resource
+		HRESULT rs = NULL;
 
+        rs = CreateDDSTextureFromFile(device, texturewstr.c_str(), nullptr, &newDisplayObject.m_texture_diffuse);	//load tex into Shader resource
+        
+		
 		//if texture fails.  load error default
 		if (rs)
 		{
@@ -418,10 +426,15 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 		newDisplayObject.m_light_linear		= SceneGraph->at(i).light_linear;
 		newDisplayObject.m_light_quadratic	= SceneGraph->at(i).light_quadratic;
 		
+       
+
 		m_displayList.push_back(newDisplayObject);
-		
+        
+        
 	}
-		
+    for (int i = 0; i < numObjects; i++) {
+        SceneGraph->at(i).display_object = &m_displayList.at(i);
+    }
 		
 		
 }
@@ -533,6 +546,13 @@ void Game::CreateWindowSizeDependentResources()
 
     m_batchEffect->SetProjection(m_projection);
 	
+}
+
+void Game::ObjectSelect()
+{
+    
+    m_displayList[0].m_model->meshes[0];
+
 }
 
 void Game::OnDeviceLost()

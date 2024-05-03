@@ -41,7 +41,7 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	m_height	= height;
 	
 	m_d3dRenderer.Initialize(handle, m_width, m_height);
-
+	
 	//database connection establish
 	int rc;
 	rc = sqlite3_open_v2("database/test.db",&m_databaseConnection, SQLITE_OPEN_READWRITE, NULL);
@@ -309,9 +309,7 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_keyArray[msg->wParam] = false;
 		break;
 
-	case WM_MOUSEMOVE:
-
-		
+	case WM_MOUSEMOVE:		
 		m_toolInputCommands.mouseXDrag = GET_X_LPARAM(msg->lParam) - m_toolInputCommands.mouseX;
 		m_toolInputCommands.mouseYDrag = GET_Y_LPARAM(msg->lParam) - m_toolInputCommands.mouseY;
 		if (m_toolInputCommands.mouseRightButton == true) {
@@ -378,6 +376,11 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.down = true;
 	}
 	else m_toolInputCommands.down = false;
-
+	if (m_keyArray['H']) {
+		//Process REsults into renderable
+		m_d3dRenderer.BuildDisplayList(&m_sceneGraph);
+		//build the renderable chunk 
+		//m_d3dRenderer.BuildDisplayChunk(&m_chunk);
+	}
 	//WASD
 }

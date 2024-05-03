@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-
+#include "DisplayObject.h"
 
 //This object should accurately and totally reflect the information stored in the object table
 
@@ -51,6 +51,8 @@ public:
 	float light_constant;
 	float light_linear;
 	float light_quadratic;
+
+	DisplayObject* display_object;
 
 };
 

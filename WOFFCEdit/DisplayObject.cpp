@@ -15,6 +15,7 @@ DisplayObject::DisplayObject()
 	m_scale.z = 0.0f;
 	m_render = true;
 	m_wireframe = false;
+	m_selected = false;
 
 	m_light_type =0;
 	m_light_diffuse_r = 0.0f;	m_light_diffuse_g = 0.0f;	m_light_diffuse_b = 0.0f;
@@ -28,5 +29,5 @@ DisplayObject::DisplayObject()
 
 DisplayObject::~DisplayObject()
 {
-//	delete m_texture_diffuse;
+	m_texture_diffuse = NULL;
 }

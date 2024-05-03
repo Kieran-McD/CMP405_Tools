@@ -61,6 +61,8 @@ private:
 
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
+	
+	void ObjectSelect();
 
 	void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin, size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
 
