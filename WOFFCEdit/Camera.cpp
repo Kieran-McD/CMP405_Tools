@@ -78,14 +78,27 @@ void Camera::Update(InputCommands Input)
 		//process input and update stuff
 		if (Input.forward)
 		{
-			m_camPosition += m_camLookDirection * m_movespeed;
+			Vector3 direction = m_camLookAt - m_camPosition;
+			direction.Normalize();
+			m_camPosition += direction * m_movespeed;
+
+			//m_camPosition += m_camLookDirection * m_movespeed;
 		}
 		if (Input.back)
 		{
-			m_camPosition -= m_camLookDirection * m_movespeed;
+			Vector3 direction = m_camLookAt - m_camPosition;
+			direction.Normalize();
+			m_camPosition -= direction * m_movespeed;
+
+			//m_camPosition -= m_camLookDirection * m_movespeed;
 		}
 		if (Input.right)
 		{
+			Vector3 direction = m_camLookAt - m_camPosition;
+			direction.Normalize();
+			m_camPosition -= direction * m_movespeed;
+			
+
 			m_camPosition += m_camRight * m_movespeed;
 		}
 		if (Input.left)
@@ -127,13 +140,13 @@ void Camera::ArcBallMotion(InputCommands Input)
 
 	// step 2: Rotate the camera around the pivot point on the first axis.
 	Matrix rotationMatrixX = Matrix::Identity;
-	rotationMatrixX = Matrix::CreateRotationX(xAngle);
+	rotationMatrixX *= Matrix::CreateRotationX(xAngle);
 	position = Vector4::Transform((position - pivot), rotationMatrixX) + pivot;
 	
 	
 	// step 3: Rotate the camera around the pivot point on the second axis.
 	Matrix rotationMatrixY = Matrix::Identity;
-	rotationMatrixY = Matrix::CreateRotationY(yAngle);
+	rotationMatrixY *= Matrix::CreateRotationY(yAngle);
 	Vector3 finalPosition = Vector3::Transform((Vector3(position.x, position.y, position.z) - Vector3(pivot.x, pivot.y, pivot.z)), rotationMatrixY) + pivot;
 	
 	m_view = Matrix::CreateLookAt(finalPosition, m_camLookAt, Vector3::UnitY);
