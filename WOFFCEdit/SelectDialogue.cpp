@@ -45,6 +45,9 @@ void SelectDialogue::SetObjectData(std::vector<SceneObject>* SceneGraph, int * s
 		//easily possible to make the data string presented more complex. showing other columns.
 		std::wstring listBoxEntry = std::to_wstring(m_sceneGraph->at(i).ID);
 		m_listBox.AddString(listBoxEntry.c_str());
+		if (m_sceneGraph->at(i).m_selected) {
+			m_listBox.SetSel(i, 1);
+		}
 	}
 }
 
@@ -61,7 +64,7 @@ void SelectDialogue::End()
 }
 
 void SelectDialogue::Select()
-{
+{	
 	//m_listBox.SetSel(0, 1);
 	m_listBox.SetCurSel(1);
 	int currentTotalCells = 0;
@@ -80,7 +83,8 @@ void SelectDialogue::Select()
 			m_sceneGraph->at(index - 1).scaY = 1;
 			m_sceneGraph->at(index - 1).scaZ = 1;
 
-			m_sceneGraph->at(index - 1).display_object->m_scale = DirectX::SimpleMath::Vector3(5, 5, 5);
+			m_sceneGraph->at(index - 1).m_selectedObject->m_scale = DirectX::SimpleMath::Vector3(5, 5, 5);
+			m_sceneGraph->at(index - 1).m_selected = true;
 			currentTotalCells++;
 		}
 		else {
@@ -93,7 +97,7 @@ void SelectDialogue::Select()
 			m_sceneGraph->at(index - 1).scaY = 1;
 			m_sceneGraph->at(index - 1).scaZ = 1;
 
-			m_sceneGraph->at(index - 1).display_object->m_scale = DirectX::SimpleMath::Vector3(1, 1, 1);
+			m_sceneGraph->at(index - 1).m_selectedObject->m_scale = DirectX::SimpleMath::Vector3(1, 1, 1);
 		}
 	}
 
@@ -107,7 +111,7 @@ void SelectDialogue::Select()
 	m_sceneGraph->at(*m_currentSelection - 5).scaY = 1;
 	m_sceneGraph->at(*m_currentSelection - 5).scaZ = 1;
 
-	m_sceneGraph->at(*m_currentSelection-1).display_object->m_scale = DirectX::SimpleMath::Vector3(5, 5, 5);
+	m_sceneGraph->at(*m_currentSelection-1).m_selectedObject->m_scale = DirectX::SimpleMath::Vector3(5, 5, 5);
 
 }
 
@@ -154,7 +158,7 @@ void SelectDialogue::DeSelect()
 			m_sceneGraph->at(index).scaY = 1;
 			m_sceneGraph->at(index).scaZ = 1;
 
-			m_sceneGraph->at(index).display_object->m_scale = DirectX::SimpleMath::Vector3(1, 1, 1);
+			m_sceneGraph->at(index).m_selectedObject->m_scale = DirectX::SimpleMath::Vector3(1, 1, 1);
 			currentTotalCells++;
 		}
 		else {
@@ -165,9 +169,11 @@ void SelectDialogue::DeSelect()
 	}
 }
 
-void SelectDialogue::DeleteSelected()
+bool SelectDialogue::DeleteSelected()
 {
-	if (m_sceneGraph->size() == 1) return;
+	if (m_sceneGraph->size() == 1) return false;
+	if (m_listBox.GetSelCount() == 0) return false;
+
 	int currentTotalCells = 0;
 	int currentCell = 0;
 	int totalCells = m_listBox.GetSelCount();
@@ -196,11 +202,12 @@ void SelectDialogue::DeleteSelected()
 		currentCell++;
 	}
 	for (int i = indexToRemove.size() - 1; i >= 0; i--) {
-		if (m_sceneGraph->size() == 1) return;
+		if (m_sceneGraph->size() == 1) return true;
 		m_sceneGraph->erase(m_sceneGraph->begin() + (indexToRemove.at(i)));
 		m_listBox.DeleteString(indexToRemove.at(i));
 	}
 
+	return true;
 }
 
 

@@ -49,21 +49,21 @@ void Camera::Update(InputCommands Input)
 	planarMotionVector.y = 0.0;
 
 
-	//if (Input.rotRight)
-	//{
-	//	m_camOrientation.y -= m_camRotRate;
-	//}
-	//if (Input.rotLeft)
-	//{
-	//	m_camOrientation.y += m_camRotRate;
-	//}
+	if (Input.rotRight)
+	{
+		m_camOrientation.y -= m_camRotRate;
+	}
+	if (Input.rotLeft)
+	{
+		m_camOrientation.y += m_camRotRate;
+	}
 	if (Input.mouseRightButton) {
 
 
-		/*m_camOrientation.y += Input.mouseXDrag;
-		m_camOrientation.x -= Input.mouseYDrag;*/
-		m_camLookAt = Vector3(0, 0, 0);
-		ArcBallMotion(Input);
+		m_camOrientation.y += Input.mouseXDrag;
+		m_camOrientation.x -= Input.mouseYDrag;
+		//m_camLookAt = Vector3(0, 0, 0);
+		//ArcBallMotion(Input);
 		//create look direction from Euler angles in m_camOrientation
 		m_camLookDirection.x = cos((m_camOrientation.y) * 3.1415 / 180) * cos(m_camOrientation.x * 3.1415 / 180);
 		m_camLookDirection.y = sin((m_camOrientation.x) * 3.1415 / 180);
@@ -78,19 +78,19 @@ void Camera::Update(InputCommands Input)
 		//process input and update stuff
 		if (Input.forward)
 		{
-			Vector3 direction = m_camLookAt - m_camPosition;
-			direction.Normalize();
-			m_camPosition += direction * m_movespeed;
+			//Vector3 direction = m_camLookAt - m_camPosition;
+			//direction.Normalize();
+			//m_camPosition += direction * m_movespeed;
 
-			//m_camPosition += m_camLookDirection * m_movespeed;
+			m_camPosition += m_camLookDirection * m_movespeed;
 		}
 		if (Input.back)
 		{
-			Vector3 direction = m_camLookAt - m_camPosition;
+		/*	Vector3 direction = m_camLookAt - m_camPosition;
 			direction.Normalize();
-			m_camPosition -= direction * m_movespeed;
+			m_camPosition -= direction * m_movespeed;*/
 
-			//m_camPosition -= m_camLookDirection * m_movespeed;
+			m_camPosition -= m_camLookDirection * m_movespeed;
 		}
 		if (Input.right)
 		{
@@ -113,19 +113,44 @@ void Camera::Update(InputCommands Input)
 		}
 
 		//update lookat point
-		//m_camLookAt = m_camPosition + m_camLookDirection;
+		m_camLookAt = m_camPosition + m_camLookDirection;
 
 	}
 
 	//apply camera vectors
-	//m_view = Matrix::CreateLookAt(m_camPosition, m_camLookAt, Vector3::UnitY);
+	m_camView = Matrix::CreateLookAt(m_camPosition, m_camLookAt, Vector3::UnitY);
 }
 
 
 
 Matrix Camera::GetViewMatrix()
 {
-	return m_view;
+	return m_camView;
+}
+
+void Camera::SetUpProjectionMatrix(float aspectRatio)
+{
+	float fovAngleY = 70.0f * DirectX::XM_PI / 180.0f;
+
+	// This is a simple example of change that can be made when the app is in
+	// portrait or snapped view.
+	if (aspectRatio < 1.0f)
+	{
+		fovAngleY *= 2.0f;
+	}
+
+	// This sample makes use of a right-handed coordinate system using row-major matrices.
+	m_camProjection = Matrix::CreatePerspectiveFieldOfView(
+		fovAngleY,
+		aspectRatio,
+		0.01f,
+		1000.0f
+	);
+}
+
+Matrix Camera::GetProjectionMatrix()
+{
+	return m_camProjection;
 }
 
 void Camera::ArcBallMotion(InputCommands Input)
@@ -149,7 +174,7 @@ void Camera::ArcBallMotion(InputCommands Input)
 	rotationMatrixY *= Matrix::CreateRotationY(yAngle);
 	Vector3 finalPosition = Vector3::Transform((Vector3(position.x, position.y, position.z) - Vector3(pivot.x, pivot.y, pivot.z)), rotationMatrixY) + pivot;
 	
-	m_view = Matrix::CreateLookAt(finalPosition, m_camLookAt, Vector3::UnitY);
+	m_camView = Matrix::CreateLookAt(finalPosition, m_camLookAt, Vector3::UnitY);
 
 	m_camOrientation.x = xAngle;
 	m_camOrientation.y = yAngle;

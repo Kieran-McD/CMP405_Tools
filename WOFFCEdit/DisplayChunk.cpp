@@ -18,6 +18,9 @@ DisplayChunk::DisplayChunk()
 
 DisplayChunk::~DisplayChunk()
 {
+	if (m_texture_diffuse) {
+		m_texture_diffuse = NULL;
+	}
 }
 
 void DisplayChunk::PopulateChunkData(ChunkObject * SceneChunk)
@@ -109,6 +112,9 @@ void DisplayChunk::LoadHeightMap(std::shared_ptr<DX::DeviceResources>  DevResour
 	//load in texture diffuse
 	
 	//load the diffuse texture
+
+	if(m_texture_diffuse)	m_texture_diffuse->Release();
+
 	std::wstring texturewstr = StringToWCHART(m_tex_diffuse_path);
 	HRESULT rs;	
 	rs = CreateDDSTextureFromFile(device, texturewstr.c_str(), NULL, &m_texture_diffuse);	//load tex into Shader resource	view and resource

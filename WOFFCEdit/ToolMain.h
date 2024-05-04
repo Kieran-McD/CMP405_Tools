@@ -7,7 +7,7 @@
 #include "SceneObject.h"
 #include "InputCommands.h"
 #include <vector>
-
+#include <list>
 
 class ToolMain
 {
@@ -22,6 +22,8 @@ public: //methods
 	void	onActionLoad();													//load the current chunk
 	afx_msg	void	onActionSave();											//save the current chunk
 	afx_msg void	onActionSaveTerrain();									//save chunk geometry
+
+	afx_msg void onActionRebuildScene();
 
 	void	Tick(MSG *msg);
 	void	UpdateInput(MSG *msg);
@@ -40,6 +42,7 @@ private:	//variables
 	HWND	m_toolHandle;		//Handle to the  window
 	Game	m_d3dRenderer;		//Instance of D3D rendering system for our tool
 	InputCommands m_toolInputCommands;		//input commands that we want to use and possibly pass over to the renderer
+	InputCommands m_toolInputCommandsLastFrame;
 	CRect	WindowRECT;		//Window area rectangle. 
 	char	m_keyArray[256];
 	sqlite3 *m_databaseConnection;	//sqldatabase handle
@@ -48,6 +51,9 @@ private:	//variables
 	int m_height;
 	int m_currentChunk;			//the current chunk of thedatabase that we are operating on.  Dictates loading and saving. 
 	
-
 	
+	std::vector<int> selected_id;
+	
+	void MouseClick();
+	void DeleteObjects();
 };

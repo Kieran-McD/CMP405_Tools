@@ -5,19 +5,16 @@
 #include "SceneObject.h"
 #include <vector>
 
-// SelectDialogue dialog
-
-class SelectDialogue : public CDialogEx
+class TextureDialogue : public CDialogEx
 {
-	DECLARE_DYNAMIC(SelectDialogue)
+	DECLARE_DYNAMIC(TextureDialogue)
 
 public:
-	SelectDialogue(CWnd* pParent, std::vector<SceneObject>* SceneGraph);   // modal // takes in out scenegraph in the constructor
-	SelectDialogue(CWnd* pParent = NULL);
-	virtual ~SelectDialogue();
-	void SetObjectData(std::vector<SceneObject>* SceneGraph, int * Selection);	//passing in pointers to the data the class will operate on.
-	
-// Dialog Data
+	TextureDialogue(CWnd* pParent, std::vector<SceneObject>* SceneGraph);   // modal // takes in out scenegraph in the constructor
+	TextureDialogue(CWnd* pParent = NULL);
+	virtual ~TextureDialogue();
+
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_DIALOG1 };
 #endif
@@ -27,9 +24,10 @@ protected:
 	afx_msg void End();		//kill the dialogue
 	afx_msg void Select();	//Item has been selected
 
-	std::vector<SceneObject> * m_sceneGraph;
-	int * m_currentSelection;
-	
+	int* m_currentSelection;
+
+	std::vector<CString> m_texturePaths;
+	std::vector<SceneObject>* m_sceneGraph;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -37,6 +35,7 @@ public:
 	CListBox m_listBox;
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
+	void FindTextures(std::vector<SceneObject>* SceneGraph);
 	void DeSelect();
 	bool DeleteSelected();
 
@@ -45,4 +44,4 @@ public:
 };
 
 
-INT_PTR CALLBACK SelectProc( HWND   hwndDlg,UINT   uMsg,WPARAM wParam,LPARAM lParam);
+INT_PTR CALLBACK SelectProc(HWND   hwndDlg, UINT   uMsg, WPARAM wParam, LPARAM lParam);

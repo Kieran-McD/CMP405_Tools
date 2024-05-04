@@ -6,6 +6,7 @@ BEGIN_MESSAGE_MAP(MFCMain, CWinApp)
 	ON_COMMAND(ID_FILE_QUIT,	&MFCMain::MenuFileQuit)
 	ON_COMMAND(ID_FILE_SAVETERRAIN, &MFCMain::MenuFileSaveTerrain)
 	ON_COMMAND(ID_EDIT_SELECT, &MFCMain::MenuEditSelect)
+	ON_COMMAND(ID_EDIT_TEXTURE, &MFCMain::MenuTextureSelect)
 	ON_COMMAND(ID_BUTTON40001,	&MFCMain::ToolBarButton1)
 	ON_COMMAND(ID_BUTTON40007, & MFCMain::ToolBarButton2)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_TOOL, &CMyFrame::OnUpdatePage)
@@ -86,9 +87,16 @@ int MFCMain::Run()
 				if (msg.wParam == 46)
 				{
 					if (m_ToolSelectDialogue) {
-						m_ToolSelectDialogue.DeleteSelected();
+						if (m_ToolSelectDialogue.DeleteSelected()) {
+							m_ToolSystem.onActionRebuildScene();
+						}
 					}
 				}
+
+				if (m_ToolSelectDialogue) {
+
+				}
+			
 				break;
 			}
 		}
@@ -105,6 +113,8 @@ int MFCMain::Run()
 
 	return (int)msg.wParam;
 }
+
+
 
 void MFCMain::MenuFileQuit()
 {
@@ -128,11 +138,24 @@ void MFCMain::MenuEditSelect()
 		m_ToolSelectDialogue.Create(IDD_DIALOG1);	//Start up modeless
 		m_ToolSelectDialogue.ShowWindow(SW_SHOW);	//show modeless
 		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedObject);
+		
 	}
 	else {
 		m_ToolSelectDialogue.ShowWindow(SW_SHOW);
 	}
 	
+}
+
+void MFCMain::MenuTextureSelect()
+{
+	if (!m_ToolTextureDialogue) {
+		m_ToolTextureDialogue.Create(IDD_DIALOG2);	//Start up modeless
+		m_ToolTextureDialogue.ShowWindow(SW_SHOW);	//show modeless
+		m_ToolTextureDialogue.FindTextures(&m_ToolSystem.m_sceneGraph);
+	}
+	else {
+		m_ToolTextureDialogue.ShowWindow(SW_SHOW);
+	}
 }
 
 void MFCMain::ToolBarButton1()
@@ -145,6 +168,7 @@ void MFCMain::ToolBarButton2() {
 	if (m_ToolSelectDialogue) {
 		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedObject);
 	}
+	MessageBox(NULL, L"Level Loaded", L"Notification", MB_OK);
 }
 
 MFCMain::MFCMain()

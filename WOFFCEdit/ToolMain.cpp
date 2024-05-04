@@ -36,6 +36,7 @@ int ToolMain::getCurrentSelectionID()
 
 void ToolMain::onActionInitialise(HWND handle, int width, int height)
 {
+	m_toolHandle = handle;
 	//window size, handle etc for directX
 	m_width		= width;
 	m_height	= height;
@@ -277,6 +278,14 @@ void ToolMain::onActionSaveTerrain()
 	m_d3dRenderer.SaveDisplayChunk(&m_chunk);
 }
 
+void ToolMain::onActionRebuildScene()
+{
+	//Process REsults into renderable
+	m_d3dRenderer.BuildDisplayList(&m_sceneGraph);
+	//build the renderable chunk 
+	//m_d3dRenderer.BuildDisplayChunk(&m_chunk);
+}
+
 void ToolMain::Tick(MSG *msg)
 {
 	//do we have a selection
@@ -287,17 +296,39 @@ void ToolMain::Tick(MSG *msg)
 		//add to scenegraph
 		//resend scenegraph to Direct X renderer
 
+	
+	
+	if (m_toolInputCommands.mouseLeftButtonDown) {
+		MouseClick();
+		
+	}
+
+	for (int i = 0; i < m_sceneGraph.size(); i++) {
+		if (m_sceneGraph[i].m_selected) {
+			m_sceneGraph[i].scaX = 5;
+			m_sceneGraph[i].scaY = 5;
+			m_sceneGraph[i].scaZ = 5;
+		}
+		else {
+			m_sceneGraph[i].scaX = 1;
+			m_sceneGraph[i].scaY = 1;
+			m_sceneGraph[i].scaZ = 1;
+		}
+	}
+
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);
-
+	//onActionRebuildScene();
 	m_toolInputCommands.mouseXDrag = 0;
 	m_toolInputCommands.mouseYDrag = 0;
+
+	m_toolInputCommands.mouseLeftButtonDown = false;
+	m_toolInputCommandsLastFrame = m_toolInputCommands;
+
 }
 
 void ToolMain::UpdateInput(MSG * msg)
 {
-
-
 	switch (msg->message)
 	{
 		//Global inputs,  mouse position and keys etc
@@ -322,10 +353,15 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
 		//set some flag for the mouse button in inputcommands
-		m_toolInputCommands.mouseLeftButton = true;
+		//Checks if the mouse click was clicked on the main window
+		if (msg->hwnd == m_toolHandle) {
+			m_toolInputCommands.mouseLeftButton = true;
+			m_toolInputCommands.mouseLeftButtonDown = true;
+		}	
 		break;
 	case WM_LBUTTONUP:
 		m_toolInputCommands.mouseLeftButton = false;
+
 		break;
 	case WM_RBUTTONDOWN:
 		m_toolInputCommands.mouseRightButton = true;
@@ -377,10 +413,108 @@ void ToolMain::UpdateInput(MSG * msg)
 	}
 	else m_toolInputCommands.down = false;
 	if (m_keyArray['H']) {
-		//Process REsults into renderable
-		m_d3dRenderer.BuildDisplayList(&m_sceneGraph);
-		//build the renderable chunk 
-		//m_d3dRenderer.BuildDisplayChunk(&m_chunk);
+
+		//onActionRebuildScene();
+	}
+	if (m_keyArray[17]) {
+		m_toolInputCommands.controlButton = true;
+	}
+	else {
+		m_toolInputCommands.controlButton = false;
+	}
+	if (m_keyArray[46]) {
+		DeleteObjects();
 	}
 	//WASD
+}
+
+void ToolMain::MouseClick()
+{
+	int id = m_d3dRenderer.MouseClick();
+
+	
+	if (id < 0 && !m_toolInputCommands.controlButton) {
+		for (int i = selected_id.size() - 1; i > -1; i--) {
+			m_sceneGraph[selected_id[i]].m_selected = false;
+
+			m_sceneGraph[selected_id[i]].scaX = 1;
+			m_sceneGraph[selected_id[i]].scaY = 1;
+			m_sceneGraph[selected_id[i]].scaZ = 1;
+			id = -1;
+			selected_id.erase(selected_id.begin() + i);
+
+		}
+
+
+		onActionRebuildScene();
+		return;
+	}
+	else if (id < 0) return;
+	bool pushID = true;
+
+	//Multiple Selection Functionality
+	if (m_toolInputCommands.controlButton) {
+		for (int i = selected_id.size() - 1; i > -1; i--) {
+			//Checks if the currently selected objects already been selected
+			if (id == selected_id[i]) {
+				//Removes current object from selected object
+				selected_id.erase(selected_id.begin() + i);
+				m_sceneGraph[id].m_selected = false;
+
+				m_sceneGraph[id].scaX = 1;
+				m_sceneGraph[id].scaY = 1;
+				m_sceneGraph[id].scaZ = 1;
+
+				pushID = false;
+			}
+			
+		}
+	}
+	//Single Selection Functionality
+	else {
+		//Checks to find all objects that are selected
+		for (int i = selected_id.size() - 1; i > -1; i--) {
+			//Removes all objects from selection apart from the current selected object
+			if (id != selected_id[i]) {
+				m_sceneGraph[selected_id[i]].m_selected = false;
+
+				m_sceneGraph[selected_id[i]].scaX = 1;
+				m_sceneGraph[selected_id[i]].scaY = 1;
+				m_sceneGraph[selected_id[i]].scaZ = 1;
+
+				selected_id.erase(selected_id.begin() + i);
+
+			}
+			else {
+				pushID = false;
+			}
+		}
+	}
+
+	if (pushID) {
+		m_sceneGraph[id].m_selected = true;
+		selected_id.push_back(id);
+
+		m_sceneGraph[id].scaX = 5;
+		m_sceneGraph[id].scaY = 5;
+		m_sceneGraph[id].scaZ = 5;
+	}
+
+	onActionRebuildScene();
+
+}
+
+//Delete Selected Objects
+void ToolMain::DeleteObjects()
+{
+	std::sort(selected_id.begin(), selected_id.end());
+	for (int i = selected_id.size() - 1; i > -1; i--) {
+		if (m_sceneGraph.size() == 1) {
+			return;
+			onActionRebuildScene();
+		}
+		m_sceneGraph.erase(m_sceneGraph.begin() + selected_id[i]);
+		selected_id.erase(selected_id.begin() + i);
+	}
+	onActionRebuildScene();
 }

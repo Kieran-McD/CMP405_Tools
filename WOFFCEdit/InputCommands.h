@@ -17,6 +17,10 @@ struct InputCommands
 	float mouseYDrag;
 
 	bool mouseLeftButton;
+	bool mouseLeftButtonDown;
 	bool mouseRightButton;
+	bool rightMouseButtonDown;
+
+	bool controlButton;
 
 };

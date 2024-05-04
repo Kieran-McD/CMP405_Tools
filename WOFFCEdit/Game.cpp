@@ -2,9 +2,9 @@
 // Game.cpp
 //
 
-#include "pch.h"
-#include "Game.h"
 #include "DisplayObject.h"
+#include "Game.h"
+#include "pch.h"
 #include <string>
 
 
@@ -23,36 +23,6 @@ Game::Game()
 	//initial Settings
 	//modes
 	m_grid = false;
-
-	//functional
-	m_movespeed = 0.30;
-	m_camRotRate = 3.0;
-
-	//camera
-	m_camPosition.x = 0.0f;
-	m_camPosition.y = 3.7f;
-	m_camPosition.z = -3.5f;
-
-	m_camOrientation.x = 0;
-	m_camOrientation.y = 0;
-	m_camOrientation.z = 0;
-
-	m_camLookAt.x = 0.0f;
-	m_camLookAt.y = 0.0f;
-	m_camLookAt.z = 0.0f;
-
-	m_camLookDirection.x = 0.0f;
-	m_camLookDirection.y = 0.0f;
-	m_camLookDirection.z = 0.0f;
-
-	m_camRight.x = 0.0f;
-	m_camRight.y = 0.0f;
-	m_camRight.z = 0.0f;
-
-	m_camOrientation.x = 0.0f;
-	m_camOrientation.y = 0.0f;
-	m_camOrientation.z = 0.0f;
-
 }
 
 Game::~Game()
@@ -83,6 +53,9 @@ void Game::Initialize(HWND window, int width, int height)
 
     m_deviceResources->CreateWindowSizeDependentResources();
     CreateWindowSizeDependentResources();
+
+    GetClientRect(window, &m_windowSize);
+
 
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
@@ -119,6 +92,7 @@ void Game::Tick(InputCommands *Input)
 {
 	//copy over the input commands so we have a local version to use elsewhere.
 	m_InputCommands = *Input;
+
     m_timer.Tick([&]()
     {
         Update(m_timer);
@@ -142,12 +116,14 @@ void Game::Update(DX::StepTimer const& timer)
 {   
     Ray ray = Ray();
 
-    cam.Update(m_InputCommands);
 
-    m_batchEffect->SetView(cam.GetViewMatrix());
+    m_cam.Update(m_InputCommands);
+
+    m_batchEffect->SetView(m_cam.GetViewMatrix());
     m_batchEffect->SetWorld(Matrix::Identity);
-	m_displayChunk.m_terrainEffect->SetView(cam.GetViewMatrix());
+	m_displayChunk.m_terrainEffect->SetView(m_cam.GetViewMatrix());
 	m_displayChunk.m_terrainEffect->SetWorld(Matrix::Identity);
+
 
 #ifdef DXTK_AUDIO
     m_audioTimerAcc -= (float)timer.GetElapsedSeconds();
@@ -216,7 +192,7 @@ void Game::Render()
 															m_displayList[i].m_orientation.z *3.1415 / 180);
 
 		XMMATRIX local = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, scale, g_XMZero, rotate, translate);       
-		m_displayList[i].m_model->Draw(context, *m_states, local, cam.GetViewMatrix(), m_projection, false);	//last variable in draw,  make TRUE for wireframe       
+		m_displayList[i].m_model->Draw(context, *m_states, local, m_cam.GetViewMatrix(), m_cam.GetProjectionMatrix(), false);	//last variable in draw,  make TRUE for wireframe       
 
 		m_deviceResources->PIXEndEvent();
 	}
@@ -234,7 +210,7 @@ void Game::Render()
     //CAMERA POSITION ON HUD
     m_sprites->Begin();
     WCHAR   Buffer[256];
-    std::wstring var = L"Cam X: " + std::to_wstring(m_camRight.x) + L"Cam Y: " + std::to_wstring(m_camRight.y) + L"Cam Z: " + std::to_wstring(m_camRight.z);
+    std::wstring var = L"Mouse X: " + std::to_wstring(m_InputCommands.mouseX) + L"Mouse Y: " + std::to_wstring(m_InputCommands.mouseY);
     m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(100, 10), Colors::Yellow);
     m_sprites->End();
 
@@ -342,6 +318,7 @@ void Game::OnWindowSizeChanged(int width, int height)
         return;
 
     CreateWindowSizeDependentResources();
+
 }
 
 void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
@@ -369,8 +346,10 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 		DisplayObject newDisplayObject;
 		
 		//load model
-		std::wstring modelwstr = StringToWCHART(SceneGraph->at(i).model_path);							//convect string to Wchar
-		newDisplayObject.m_model = Model::CreateFromCMO(device, modelwstr.c_str(), *m_fxFactory, true);	//get DXSDK to load model "False" for LH coordinate system (maya)
+		//std::wstring modelwstr = StringToWCHART(SceneGraph->at(i).model_path);							//convect string to Wchar
+        std::wstring modelwstr = StringToWCHART(SceneGraph->at(i).model_path);
+        
+        newDisplayObject.m_model = Model::CreateFromCMO(device, modelwstr.c_str(), *m_fxFactory, true);	//get DXSDK to load model "False" for LH coordinate system (maya)
 
 		//Load Texture
 		std::wstring texturewstr = StringToWCHART(SceneGraph->at(i).tex_diffuse_path);								//convect string to Wchar
@@ -394,6 +373,7 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 				lights->SetTexture(newDisplayObject.m_texture_diffuse);			
 			}
 		});
+        newDisplayObject.m_ID = SceneGraph->at(i).ID;
 
 		//set position
 		newDisplayObject.m_position.x = SceneGraph->at(i).posX;
@@ -433,7 +413,7 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
         
 	}
     for (int i = 0; i < numObjects; i++) {
-        SceneGraph->at(i).display_object = &m_displayList.at(i);
+        SceneGraph->at(i).m_selectedObject = &m_displayList.at(i);
     }
 		
 		
@@ -445,7 +425,7 @@ void Game::BuildDisplayChunk(ChunkObject * SceneChunk)
 	//which, to be honest, is almost all of it. Its mostly rendering related info so...
 	m_displayChunk.PopulateChunkData(SceneChunk);		//migrate chunk data
 	m_displayChunk.LoadHeightMap(m_deviceResources);
-	m_displayChunk.m_terrainEffect->SetProjection(m_projection);
+	m_displayChunk.m_terrainEffect->SetProjection(m_cam.GetProjectionMatrix());
 	m_displayChunk.InitialiseBatch();
 }
 
@@ -525,27 +505,65 @@ void Game::CreateDeviceDependentResources()
 // Allocate all memory resources that change on a window SizeChanged event.
 void Game::CreateWindowSizeDependentResources()
 {
+
+
     auto size = m_deviceResources->GetOutputSize();
     float aspectRatio = float(size.right) / float(size.bottom);
-    float fovAngleY = 70.0f * XM_PI / 180.0f;
+   
+    m_cam.SetUpProjectionMatrix(aspectRatio);
 
-    // This is a simple example of change that can be made when the app is in
-    // portrait or snapped view.
-    if (aspectRatio < 1.0f)
-    {
-        fovAngleY *= 2.0f;
-    }
-
-    // This sample makes use of a right-handed coordinate system using row-major matrices.
-    m_projection = Matrix::CreatePerspectiveFieldOfView(
-        fovAngleY,
-        aspectRatio,
-        0.01f,
-        1000.0f
-    );
-
-    m_batchEffect->SetProjection(m_projection);
+    m_batchEffect->SetProjection(m_cam.GetProjectionMatrix());
 	
+}
+
+int Game::MouseClick()
+{
+    float rayDistance = INFINITY;
+    float closestDistance = INFINITY;
+    DisplayObject* currentDisplaySelected = nullptr;
+
+    //Gets the mouse position in screen and forward
+    Vector3 mouseScreenPos = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 0);
+    Vector3 mouseForward = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 1.f);
+    int id = 0;
+    for (int i = 0; i < m_displayList.size(); i++) {
+      
+        //Objects tranlation data
+        Vector3 objectScale = { m_displayList[i].m_scale.x,		m_displayList[i].m_scale.y,		m_displayList[i].m_scale.z };
+        Vector3 objectTranslation = { m_displayList[i].m_position.x,	m_displayList[i].m_position.y,	m_displayList[i].m_position.z };
+        Vector3 objectRotation = Quaternion::CreateFromYawPitchRoll(m_displayList[i].m_orientation.y * 3.1415 / 180, m_displayList[i].m_orientation.x * 3.1415 / 180, m_displayList[i].m_orientation.z * 3.1415 / 180);
+
+        //Get World Matrix of Current Object
+        XMMATRIX localWorldMatrix = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, objectScale, g_XMZero, objectRotation, objectTranslation);
+
+        //Unprojects the mouse into the world
+        Vector3 mousePos = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+        Vector3 mousePosDirection = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+
+
+        Vector3 dir = (mousePosDirection - mousePos);
+        dir.Normalize();
+        Ray ray = Ray(mousePos,dir);
+
+        //Below looks for the closest object to the mouse
+        float tempDistance = Vector3::Distance(m_displayList[i].m_position, mousePos);
+        //Ray trace intersection
+        if (ray.Intersects(m_displayList[i].m_model->meshes[0]->boundingBox, rayDistance)) {
+            //Checks the current ray trace distance with the closest distance
+            if (rayDistance < closestDistance) {
+                closestDistance = Vector3::Distance(m_displayList[i].m_position, mousePos);
+                currentDisplaySelected = &m_displayList[i];
+                id = i;
+            }         
+        }
+    }
+    //Temporary fill in to show that the object is selected
+    if (currentDisplaySelected) {
+        currentDisplaySelected->m_scale = Vector3(5, 5, 5);
+    }
+    if (!currentDisplaySelected) return -1;
+
+    return id;
 }
 
 void Game::ObjectSelect()

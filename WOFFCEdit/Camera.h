@@ -13,7 +13,15 @@ public:
 	~Camera();
 	void Update(InputCommands Input);
 	
+	//Getters/Setters
 	Matrix GetViewMatrix();
+
+	void SetUpProjectionMatrix(float aspectRatio);
+	Matrix GetProjectionMatrix();
+
+	Vector3 GetCamPosition() { return m_camPosition; }
+
+	Vector3 GetCamLookAtDir() { return m_camLookDirection; }
 private:
 	
 	void ArcBallMotion(InputCommands Input);
@@ -28,10 +36,14 @@ private:
 	Vector3		m_camLookAt;
 	Vector3		m_camLookDirection;
 	Vector3		m_camRight;
-	Vector3 m_camUp;
+	Vector3		m_camUp;
+	
+	float m_fov;
+	float m_nearPlane;
+	float m_farPlane;
 
-
-	Matrix                                             m_view;
+	Matrix		m_camView;
+	Matrix		m_camProjection;
 
 };
 

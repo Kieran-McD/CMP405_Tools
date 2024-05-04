@@ -51,6 +51,9 @@ public:
 	void SaveDisplayChunk(ChunkObject *SceneChunk);	//saves geometry et al
 	void ClearDisplayList();
 
+	//Inputs
+	int MouseClick();
+
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
 #endif
@@ -62,6 +65,7 @@ private:
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
 	
+
 	void ObjectSelect();
 
 	void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin, size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
@@ -74,15 +78,9 @@ private:
 	//functionality
 	float								m_movespeed;
 
-	//camera
-	DirectX::SimpleMath::Vector3		m_camPosition;
-	DirectX::SimpleMath::Vector3		m_camOrientation;
-	DirectX::SimpleMath::Vector3		m_camLookAt;
-	DirectX::SimpleMath::Vector3		m_camLookDirection;
-	DirectX::SimpleMath::Vector3		m_camRight;
-	float m_camRotRate;
+	RECT m_windowSize;
 
-	Camera cam;
+	Camera m_cam;
 
 	//control variables
 	bool m_grid;							//grid rendering on / off
@@ -127,8 +125,8 @@ private:
 #endif
 
     DirectX::SimpleMath::Matrix                                             m_world;
-    DirectX::SimpleMath::Matrix                                             m_view;
-    DirectX::SimpleMath::Matrix                                             m_projection;
+    //DirectX::SimpleMath::Matrix                                             m_view;
+    //DirectX::SimpleMath::Matrix                                             m_projection;
 
 
 };
