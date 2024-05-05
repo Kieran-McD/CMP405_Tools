@@ -16,7 +16,7 @@ public:
 
 	// Dialog Data
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_DIALOG1 };
+	enum { IDD = IDD_DIALOG2 };
 #endif
 
 protected:
@@ -28,6 +28,8 @@ protected:
 
 	std::vector<CString> m_texturePaths;
 	std::vector<SceneObject>* m_sceneGraph;
+	std::vector<int>* m_selectedObjectID;
+	std::string m_currentTexturePath;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -35,12 +37,11 @@ public:
 	CListBox m_listBox;
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
-	void FindTextures(std::vector<SceneObject>* SceneGraph);
+	void FindTextures(std::vector<SceneObject>* SceneGraph, std::vector<int>* IDData);
 	void DeSelect();
 	bool DeleteSelected();
 
 	afx_msg void OnBnClickedOk();
-	afx_msg void OnLbnSelchangeList1();
 
 	bool RebuildScene;
 };

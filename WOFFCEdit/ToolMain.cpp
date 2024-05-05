@@ -19,6 +19,7 @@ ToolMain::ToolMain()
 	m_toolInputCommands.left		= false;
 	m_toolInputCommands.right		= false;
 	
+	UpdateSelected = false;
 }
 
 
@@ -41,7 +42,7 @@ void ToolMain::onActionInitialise(HWND handle, int width, int height)
 	m_width		= width;
 	m_height	= height;
 	
-	m_d3dRenderer.Initialize(handle, m_width, m_height);
+	m_d3dRenderer.Initialize(handle, m_width, m_height, &m_selectedID);
 	
 	//database connection establish
 	int rc;
@@ -295,26 +296,28 @@ void ToolMain::Tick(MSG *msg)
 		//update Scenegraph
 		//add to scenegraph
 		//resend scenegraph to Direct X renderer
+	if(m_toolInputCommands.deleteObjectsInScene){
+		DeleteObjects();
+		m_toolInputCommands.deleteObjectsInScene = false;
+	}
+	
 
-	
-	
 	if (m_toolInputCommands.mouseLeftButtonDown) {
 		MouseClick();
 		
 	}
 
-	for (int i = 0; i < m_sceneGraph.size(); i++) {
-		if (m_sceneGraph[i].m_selected) {
-			m_sceneGraph[i].scaX = 5;
-			m_sceneGraph[i].scaY = 5;
-			m_sceneGraph[i].scaZ = 5;
-		}
-		else {
-			m_sceneGraph[i].scaX = 1;
-			m_sceneGraph[i].scaY = 1;
-			m_sceneGraph[i].scaZ = 1;
-		}
-	}
+	//for (int i = 0; i < m_sceneGraph.size(); i++) {
+	//	m_sceneGraph[i].scaX = 1;
+	//	m_sceneGraph[i].scaY = 1;
+	//	m_sceneGraph[i].scaZ = 1;		
+	//}
+	//for (int i = 0; i < m_selectedID.size(); i++) {
+	//	m_sceneGraph[m_selectedID.at(i)].scaX = 5;
+	//	m_sceneGraph[m_selectedID.at(i)].scaY = 5;
+	//	m_sceneGraph[m_selectedID.at(i)].scaZ = 5;
+	//}
+
 
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);
@@ -423,7 +426,7 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.controlButton = false;
 	}
 	if (m_keyArray[46]) {
-		DeleteObjects();
+		m_toolInputCommands.deleteObjectsInScene = true;
 	}
 	//WASD
 }
@@ -431,17 +434,16 @@ void ToolMain::UpdateInput(MSG * msg)
 void ToolMain::MouseClick()
 {
 	int id = m_d3dRenderer.MouseClick();
+	UpdateSelected = true;
 
-	
 	if (id < 0 && !m_toolInputCommands.controlButton) {
-		for (int i = selected_id.size() - 1; i > -1; i--) {
-			m_sceneGraph[selected_id[i]].m_selected = false;
+		for (int i = m_selectedID.size() - 1; i > -1; i--) {
 
-			m_sceneGraph[selected_id[i]].scaX = 1;
-			m_sceneGraph[selected_id[i]].scaY = 1;
-			m_sceneGraph[selected_id[i]].scaZ = 1;
+			/*m_sceneGraph[m_selectedID[i]].scaX = 1;
+			m_sceneGraph[m_selectedID[i]].scaY = 1;
+			m_sceneGraph[m_selectedID[i]].scaZ = 1;*/
 			id = -1;
-			selected_id.erase(selected_id.begin() + i);
+			m_selectedID.erase(m_selectedID.begin() + i);
 
 		}
 
@@ -454,16 +456,15 @@ void ToolMain::MouseClick()
 
 	//Multiple Selection Functionality
 	if (m_toolInputCommands.controlButton) {
-		for (int i = selected_id.size() - 1; i > -1; i--) {
+		for (int i = m_selectedID.size() - 1; i > -1; i--) {
 			//Checks if the currently selected objects already been selected
-			if (id == selected_id[i]) {
+			if (id == m_selectedID[i]) {
 				//Removes current object from selected object
-				selected_id.erase(selected_id.begin() + i);
-				m_sceneGraph[id].m_selected = false;
+				m_selectedID.erase(m_selectedID.begin() + i);
 
-				m_sceneGraph[id].scaX = 1;
+				/*m_sceneGraph[id].scaX = 1;
 				m_sceneGraph[id].scaY = 1;
-				m_sceneGraph[id].scaZ = 1;
+				m_sceneGraph[id].scaZ = 1;*/
 
 				pushID = false;
 			}
@@ -473,16 +474,15 @@ void ToolMain::MouseClick()
 	//Single Selection Functionality
 	else {
 		//Checks to find all objects that are selected
-		for (int i = selected_id.size() - 1; i > -1; i--) {
+		for (int i = m_selectedID.size() - 1; i > -1; i--) {
 			//Removes all objects from selection apart from the current selected object
-			if (id != selected_id[i]) {
-				m_sceneGraph[selected_id[i]].m_selected = false;
+			if (id != m_selectedID[i]) {
 
-				m_sceneGraph[selected_id[i]].scaX = 1;
-				m_sceneGraph[selected_id[i]].scaY = 1;
-				m_sceneGraph[selected_id[i]].scaZ = 1;
+				/*m_sceneGraph[m_selectedID[i]].scaX = 1;
+				m_sceneGraph[m_selectedID[i]].scaY = 1;
+				m_sceneGraph[m_selectedID[i]].scaZ = 1;*/
 
-				selected_id.erase(selected_id.begin() + i);
+				m_selectedID.erase(m_selectedID.begin() + i);
 
 			}
 			else {
@@ -492,12 +492,11 @@ void ToolMain::MouseClick()
 	}
 
 	if (pushID) {
-		m_sceneGraph[id].m_selected = true;
-		selected_id.push_back(id);
+		m_selectedID.push_back(id);
 
-		m_sceneGraph[id].scaX = 5;
-		m_sceneGraph[id].scaY = 5;
-		m_sceneGraph[id].scaZ = 5;
+		//m_sceneGraph[id].scaX = 5;
+		//m_sceneGraph[id].scaY = 5;
+		//m_sceneGraph[id].scaZ = 5;
 	}
 
 	onActionRebuildScene();
@@ -507,14 +506,14 @@ void ToolMain::MouseClick()
 //Delete Selected Objects
 void ToolMain::DeleteObjects()
 {
-	std::sort(selected_id.begin(), selected_id.end());
-	for (int i = selected_id.size() - 1; i > -1; i--) {
+	std::sort(m_selectedID.begin(), m_selectedID.end());
+	for (int i = m_selectedID.size() - 1; i > -1; i--) {
 		if (m_sceneGraph.size() == 1) {
-			return;
 			onActionRebuildScene();
+			return;
 		}
-		m_sceneGraph.erase(m_sceneGraph.begin() + selected_id[i]);
-		selected_id.erase(selected_id.begin() + i);
+		m_sceneGraph.erase(m_sceneGraph.begin() + m_selectedID[i]);
+		m_selectedID.erase(m_selectedID.begin() + i);
 	}
 	onActionRebuildScene();
 }

@@ -22,5 +22,5 @@ struct InputCommands
 	bool rightMouseButtonDown;
 
 	bool controlButton;
-
+	bool deleteObjectsInScene;
 };

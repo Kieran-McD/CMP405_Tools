@@ -24,7 +24,7 @@ public:
 	~Game();
 
 	// Initialization and management
-	void Initialize(HWND window, int width, int height);
+	void Initialize(HWND window, int width, int height, std::vector<int>* selectedID);
 	void SetGridState(bool state);
 
 	// Basic game loop
@@ -75,12 +75,13 @@ private:
 	DisplayChunk						m_displayChunk;
 	InputCommands						m_InputCommands;
 
-	//functionality
-	float								m_movespeed;
-
+	//Window Size
 	RECT m_windowSize;
 
+	//Render Camrea
 	Camera m_cam;
+
+	std::vector<int>* m_selectedID;
 
 	//control variables
 	bool m_grid;							//grid rendering on / off

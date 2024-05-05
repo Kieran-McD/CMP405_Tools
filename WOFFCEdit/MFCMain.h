@@ -10,6 +10,7 @@
 #include "MFCFrame.h"
 #include "SelectDialogue.h"
 #include "TextureDialogue.h"
+#include "CreateObjectDialogue.h"
 
 class MFCMain : public CWinApp 
 {
@@ -27,6 +28,7 @@ private:
 	CRect WindowRECT;	//Window area rectangle. 
 	SelectDialogue m_ToolSelectDialogue;			//for modeless dialogue, declare it here
 	TextureDialogue m_ToolTextureDialogue;
+	CreateObjectDialogue m_ToolCreateObjectDialogue;
 	int m_width;		
 	int m_height;
 	
@@ -35,8 +37,10 @@ private:
 	afx_msg void MenuFileSaveTerrain();
 	afx_msg void MenuEditSelect();
 	afx_msg void MenuTextureSelect();
+	afx_msg void MenuCreateObjectSelect();
 	afx_msg	void ToolBarButton1();
 	afx_msg void ToolBarButton2();
+	afx_msg void OnActionRebuildScene();
 
 	DECLARE_MESSAGE_MAP()	// required macro for message map functionality  One per class
 };

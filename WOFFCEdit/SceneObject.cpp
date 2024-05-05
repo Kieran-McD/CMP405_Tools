@@ -48,9 +48,6 @@ SceneObject::SceneObject()
 	light_constant = 1;
 	light_linear = 1;
 	light_quadratic = 1;
-
-	m_selected = false;
-	m_selectedObject = nullptr;
 }
 
 

@@ -37,7 +37,7 @@ Game::~Game()
 }
 
 // Initialize the Direct3D resources required to run.
-void Game::Initialize(HWND window, int width, int height)
+void Game::Initialize(HWND window, int width, int height, std::vector<int>* selectedID)
 {
     m_gamePad = std::make_unique<GamePad>();
 
@@ -56,6 +56,7 @@ void Game::Initialize(HWND window, int width, int height)
 
     GetClientRect(window, &m_windowSize);
 
+    m_selectedID = selectedID;
 
 #ifdef DXTK_AUDIO
     // Create DirectXTK for Audio objects
@@ -190,12 +191,30 @@ void Game::Render()
 		XMVECTOR rotate = Quaternion::CreateFromYawPitchRoll(m_displayList[i].m_orientation.y *3.1415 / 180,
 															m_displayList[i].m_orientation.x *3.1415 / 180,
 															m_displayList[i].m_orientation.z *3.1415 / 180);
-
+       
 		XMMATRIX local = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, scale, g_XMZero, rotate, translate);       
 		m_displayList[i].m_model->Draw(context, *m_states, local, m_cam.GetViewMatrix(), m_cam.GetProjectionMatrix(), false);	//last variable in draw,  make TRUE for wireframe       
 
 		m_deviceResources->PIXEndEvent();
 	}
+
+    //Renders object to identify selected objects
+    for (int i = 0; i < m_selectedID->size(); i++) {
+        m_deviceResources->PIXBeginEvent(L"Draw model");
+
+        DisplayObject object = m_displayList[m_selectedID->at(i)];
+        const XMVECTORF32 scale = {0.5f, 0.5f, 0.5f };
+        const XMVECTORF32 translate = { object.m_position.x, object.m_model->meshes[0]->boundingBox.Center.y + 1 * object.m_scale.y + 1, object.m_position.z };
+        XMVECTOR rotate = Quaternion::CreateFromYawPitchRoll(object.m_orientation.y * 3.1415 / 180,
+            object.m_orientation.x-180 * 3.1415 / 180,
+            object.m_orientation.z * 3.1415 / 180);
+
+
+        XMMATRIX local = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, scale, g_XMZero, rotate, translate);
+        object.m_model->Draw(context, *m_states, local, m_cam.GetViewMatrix(), m_cam.GetProjectionMatrix(), true);	//last variable in draw,  make TRUE for wireframe       
+        m_deviceResources->PIXEndEvent();
+    }
+
     m_deviceResources->PIXEndEvent();
 
 	//RENDER TERRAIN
@@ -412,11 +431,7 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
         
         
 	}
-    for (int i = 0; i < numObjects; i++) {
-        SceneGraph->at(i).m_selectedObject = &m_displayList.at(i);
-    }
-		
-		
+				
 }
 
 void Game::BuildDisplayChunk(ChunkObject * SceneChunk)

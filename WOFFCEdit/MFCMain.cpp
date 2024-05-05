@@ -7,6 +7,7 @@ BEGIN_MESSAGE_MAP(MFCMain, CWinApp)
 	ON_COMMAND(ID_FILE_SAVETERRAIN, &MFCMain::MenuFileSaveTerrain)
 	ON_COMMAND(ID_EDIT_SELECT, &MFCMain::MenuEditSelect)
 	ON_COMMAND(ID_EDIT_TEXTURE, &MFCMain::MenuTextureSelect)
+	ON_COMMAND(ID_EDIT_CREATEOBJECT, &MFCMain::MenuCreateObjectSelect)
 	ON_COMMAND(ID_BUTTON40001,	&MFCMain::ToolBarButton1)
 	ON_COMMAND(ID_BUTTON40007, & MFCMain::ToolBarButton2)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_TOOL, &CMyFrame::OnUpdatePage)
@@ -46,6 +47,8 @@ BOOL MFCMain::InitInstance()
 
 int MFCMain::Run()
 {
+
+
 	MSG msg;
 	BOOL bGotMsg;
 
@@ -53,6 +56,7 @@ int MFCMain::Run()
 
 	while (WM_QUIT != msg.message)
 	{
+
 		if (true)
 		{
 			bGotMsg = (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE) != 0);
@@ -88,7 +92,7 @@ int MFCMain::Run()
 				{
 					if (m_ToolSelectDialogue) {
 						if (m_ToolSelectDialogue.DeleteSelected()) {
-							m_ToolSystem.onActionRebuildScene();
+							//m_ToolSystem.onActionRebuildScene();
 						}
 					}
 				}
@@ -102,18 +106,31 @@ int MFCMain::Run()
 		}
 		else
 		{	
-			int ID = m_ToolSystem.getCurrentSelectionID();
-			std::wstring statusString = L"Selected Object: " + std::to_wstring(ID);
+			//int ID = m_ToolSystem.getCurrentSelectionID();
+			
+
+			//std::wstring statusString = L"Selected Object: " + std::to_wstring(ID);
 			m_ToolSystem.Tick(&msg);
 
-			if (m_ToolTextureDialogue.RebuildScene) {
+			if (m_ToolSelectDialogue && m_ToolSystem.UpdateSelected) {
+				m_ToolSelectDialogue.UpdatedSelected();
+				m_ToolSystem.UpdateSelected = false;
+			}
+
+
+			if (m_ToolTextureDialogue.RebuildScene || m_ToolCreateObjectDialogue.RebuildScene) {				
 				m_ToolSystem.onActionRebuildScene();
+				if (m_ToolSelectDialogue) {
+					m_ToolSelectDialogue.UpdateList();
+					m_ToolSelectDialogue.UpdatedSelected();
+				}				
 				m_ToolTextureDialogue.RebuildScene = false;
+				m_ToolCreateObjectDialogue.RebuildScene = false;
 			}
 			
 
 			//send current object ID to status bar in The main frame
-			m_frame->m_wndStatusBar.SetPaneText(1, statusString.c_str(), 1);	
+			//##m_frame->m_wndStatusBar.SetPaneText(1, statusString.c_str(), 1);	
 		}
 	}
 
@@ -143,7 +160,7 @@ void MFCMain::MenuEditSelect()
 	if (!m_ToolSelectDialogue) {
 		m_ToolSelectDialogue.Create(IDD_DIALOG1);	//Start up modeless
 		m_ToolSelectDialogue.ShowWindow(SW_SHOW);	//show modeless
-		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedObject);
+		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedID);
 		
 	}
 	else {
@@ -157,10 +174,22 @@ void MFCMain::MenuTextureSelect()
 	if (!m_ToolTextureDialogue) {
 		m_ToolTextureDialogue.Create(IDD_DIALOG2);	//Start up modeless
 		m_ToolTextureDialogue.ShowWindow(SW_SHOW);	//show modeless
-		m_ToolTextureDialogue.FindTextures(&m_ToolSystem.m_sceneGraph);
+		m_ToolTextureDialogue.FindTextures(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedID);
 	}
 	else {
 		m_ToolTextureDialogue.ShowWindow(SW_SHOW);
+	}
+}
+
+void MFCMain::MenuCreateObjectSelect()
+{
+	if (!m_ToolCreateObjectDialogue) {
+		m_ToolCreateObjectDialogue.Create(IDD_DIALOG3);	//Start up modeless
+		m_ToolCreateObjectDialogue.ShowWindow(SW_SHOW);	//show modeless
+		m_ToolCreateObjectDialogue.RetrieveData(&m_ToolSystem.m_sceneGraph);
+	}
+	else {
+		m_ToolCreateObjectDialogue.ShowWindow(SW_SHOW);
 	}
 }
 
@@ -172,9 +201,14 @@ void MFCMain::ToolBarButton1()
 void MFCMain::ToolBarButton2() {
 	m_ToolSystem.onActionLoad();
 	if (m_ToolSelectDialogue) {
-		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedObject);
+		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedID);
 	}
 	MessageBox(NULL, L"Level Loaded", L"Notification", MB_OK);
+}
+
+void MFCMain::OnActionRebuildScene()
+{
+	m_ToolSystem.onActionRebuildScene();
 }
 
 MFCMain::MFCMain()

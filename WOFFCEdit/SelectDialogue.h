@@ -15,7 +15,7 @@ public:
 	SelectDialogue(CWnd* pParent, std::vector<SceneObject>* SceneGraph);   // modal // takes in out scenegraph in the constructor
 	SelectDialogue(CWnd* pParent = NULL);
 	virtual ~SelectDialogue();
-	void SetObjectData(std::vector<SceneObject>* SceneGraph, int * Selection);	//passing in pointers to the data the class will operate on.
+	void SetObjectData(std::vector<SceneObject>* SceneGraph, std::vector<int>* IDData);	//passing in pointers to the data the class will operate on.
 	
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
@@ -28,6 +28,7 @@ protected:
 	afx_msg void Select();	//Item has been selected
 
 	std::vector<SceneObject> * m_sceneGraph;
+	std::vector<int>* m_selectedObjectID;
 	int * m_currentSelection;
 	
 
@@ -39,6 +40,9 @@ public:
 	virtual void PostNcDestroy();
 	void DeSelect();
 	bool DeleteSelected();
+
+	void UpdatedSelected();
+	void UpdateList();
 
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnLbnSelchangeList1();

@@ -52,9 +52,5 @@ public:
 	float light_linear;
 	float light_quadratic;
 
-	//Funcionality Variables
-	bool m_selected;
-	DisplayObject* m_selectedObject;
-
 };
 
