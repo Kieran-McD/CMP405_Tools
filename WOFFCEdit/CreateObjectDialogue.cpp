@@ -104,7 +104,7 @@ void CreateObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph)
 
 	m_modelComboBox.SetCurSel(0);
 	m_textureComboBox.SetCurSel(0);
-
+	
 
 	m_idNumEdit.SetLimitText(5);
 	m_idNumEdit.SetWindowTextW(_T("0"));
