@@ -26,6 +26,7 @@ protected:
 
 	int* m_currentSelection;
 
+	//Data Storages
 	std::vector<CString> m_texturePaths;
 	std::vector<SceneObject>* m_sceneGraph;
 	std::vector<int>* m_selectedObjectID;
@@ -37,12 +38,15 @@ public:
 	CListBox m_listBox;
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
+
+	//Functionality
 	void FindTextures(std::vector<SceneObject>* SceneGraph, std::vector<int>* IDData);
 	void DeSelect();
 	bool DeleteSelected();
 
 	afx_msg void OnBnClickedOk();
 
+	//Variables for checks
 	bool RebuildScene;
 };
 

@@ -15,7 +15,6 @@ BEGIN_MESSAGE_MAP(SelectDialogue, CDialogEx)
 	ON_LBN_SELCHANGE(IDC_LIST1, &SelectDialogue::Select)	//listbox
 END_MESSAGE_MAP()
 
-
 SelectDialogue::SelectDialogue(CWnd* pParent, std::vector<SceneObject>* SceneGraph)		//constructor used in modal
 	: CDialogEx(IDD_DIALOG1, pParent)
 {
@@ -64,45 +63,24 @@ void SelectDialogue::End()
 	DestroyWindow();	//destory the window properly.  INcluding the links and pointers created.  THis is so the dialogue can start again. 
 }
 
+//Functiomality when selected item from list box
 void SelectDialogue::Select()
 {	
-	//m_listBox.SetSel(0, 1);
-	m_listBox.SetCurSel(1);
-	int currentTotalCells = 0;
-	int currentCell = 0;
+	//Used to update the selected scene objects
 	for (int i = 0; i < m_listBox.GetCount(); i++) 
 	{
+		//Checks to see if the id is already in the vector
 		int cnt = std::count(m_selectedObjectID->begin(), m_selectedObjectID->end(), i);
+		
 		if (m_listBox.GetSel(i) > 0 && cnt < 1) {
-			int index = i + 1;
-			CString currentSelectionValue;
-
-			//m_listBox.GetText(currentTotalCells, currentSelectionValue);
-
-			//*m_currentSelection = _ttoi(currentSelectionValue);
-			m_selectedObjectID->push_back(index - 1);
-
-			/*m_sceneGraph->at(index - 1).scaX = 5;
-			m_sceneGraph->at(index - 1).scaY = 5;
-			m_sceneGraph->at(index - 1).scaZ = 5;*/
-
-			//m_sceneGraph->at(index - 1).m_selectedObject->m_scale = DirectX::SimpleMath::Vector3(5, 5, 5);
-			//m_sceneGraph->at(index - 1).m_selected = true;
-			//currentTotalCells++;
+			//Adds the currently selected item to the list
+			int index = i;
+			m_selectedObjectID->push_back(index);
 		}
 		else if(m_listBox.GetSel(i) < 1 && cnt > 0){
-			int index = i + 1;
-			CString currentSelectionValue;
-
-			m_listBox.GetText(index, currentSelectionValue);
-
-			m_selectedObjectID->erase(std::remove(m_selectedObjectID->begin(), m_selectedObjectID->end(), index-1), m_selectedObjectID->end());
-
-			//m_sceneGraph->at(index - 1).scaX = 1;
-			//m_sceneGraph->at(index - 1).scaY = 1;
-			//m_sceneGraph->at(index - 1).scaZ = 1;
-
-			//m_sceneGraph->at(index - 1).m_selectedObject->m_scale = DirectX::SimpleMath::Vector3(1, 1, 1);
+			//Removes the currently selected item from the list
+			int index = i;
+			m_selectedObjectID->erase(std::remove(m_selectedObjectID->begin(), m_selectedObjectID->end(), index), m_selectedObjectID->end());			
 		}
 	}
 
@@ -131,6 +109,7 @@ void SelectDialogue::PostNcDestroy()
 {
 }
 
+//Unhighlighs all the items
 void SelectDialogue::DeSelect()
 {
 	
@@ -163,11 +142,17 @@ void SelectDialogue::DeSelect()
 	}*/
 }
 
+//Need to fix sometimes doesnt delete
 bool SelectDialogue::DeleteSelected()
 {
+	//Check to see if there is only 1 item left in the list
 	if (m_sceneGraph->size() == 1) return false;
-	if (m_listBox.GetSelCount() == 0) return false;
+	//Checks to see if the list box is empty
+	if (m_listBox.GetSelCount() == 0) {
+		return false;
+	}
 
+#pragma region oldmethod
 	//int currentTotalCells = 0;
 	//int currentCell = 0;
 	//int totalCells = m_listBox.GetSelCount();
@@ -179,14 +164,10 @@ bool SelectDialogue::DeleteSelected()
 	//		m_listBox.SetSel(currentCell, 0);
 	//		int index = currentCell;
 	//		CString currentSelectionValue;
-
 	//		m_listBox.GetText(index, currentSelectionValue);
-
 	//		indexToRemove.push_back(index);
-
 	//		//m_sceneGraph->erase(m_sceneGraph->begin() + (index));	
 	//		//m_listBox.DeleteString(index);
-
 	//		currentTotalCells++;
 	//	}
 	//	else {
@@ -195,7 +176,9 @@ bool SelectDialogue::DeleteSelected()
 
 	//	currentCell++;
 	//}
+#pragma endregion
 
+	//Looks through all the selected id and removes them from the list
 	std::sort(m_selectedObjectID->begin(), m_selectedObjectID->end());
 	for (int i = m_selectedObjectID->size() - 1; i >= 0; i--) {
 		if (m_listBox.GetCount() == 1) return true;
@@ -205,13 +188,15 @@ bool SelectDialogue::DeleteSelected()
 	return true;
 }
 
+//Calls when the list box needs updated
 void SelectDialogue::UpdatedSelected()
 {
+	//Unselects all items in the list
 	for (int i = 0; i < m_listBox.GetCount(); i++) {
 		m_listBox.SetSel(i, 0);
-
 	}
 
+	//Selects the items in the list to the appropriate id
 	for (int i = 0; i < m_selectedObjectID->size(); i++) {
 		m_listBox.SetSel(m_selectedObjectID->at(i), 1);	
 	}

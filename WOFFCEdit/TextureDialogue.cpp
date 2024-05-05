@@ -35,8 +35,10 @@ void TextureDialogue::End()
 {
 }
 
+//Called when item in lisbox is selected
 void TextureDialogue::Select()
 {
+	//Gets the appropriate texture and converts it to std::string
 	CT2CA pszConvertedAnsiString(m_texturePaths.at(m_listBox.GetCurSel()));
 	m_currentTexturePath = pszConvertedAnsiString;
 }
@@ -73,8 +75,11 @@ void TextureDialogue::FindTextures(std::vector<SceneObject>* SceneGraph, std::ve
 
 		if (!finder.IsDots())
 		{
+			//gets name of file
 			CString name = finder.GetFileName();
+			//Adsd name to list box
 			m_listBox.AddString(name);
+			//Stores texture path in storage
 			m_texturePaths.push_back("database/data/" + name);
 		}
 	}
@@ -90,12 +95,17 @@ bool TextureDialogue::DeleteSelected()
 	return false;
 }
 
+//When clicking apply call this function
 void TextureDialogue::OnBnClickedOk()
 {
+	//Checks if there is available textures
 	if (m_currentTexturePath.empty()) return;
 
+	//Sets all selected objects to the appropriate texture
 	for (int i = 0; i < m_selectedObjectID->size(); i++) {
 		m_sceneGraph->at(m_selectedObjectID->at(i)).tex_diffuse_path = m_currentTexturePath;
 	}
+
+	//Check to rebuild scene
 	RebuildScene = true;
 }

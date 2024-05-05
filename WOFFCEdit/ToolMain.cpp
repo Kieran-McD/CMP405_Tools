@@ -295,29 +295,14 @@ void ToolMain::Tick(MSG *msg)
 	//has something changed
 		//update Scenegraph
 		//add to scenegraph
-		//resend scenegraph to Direct X renderer
-	if(m_toolInputCommands.deleteObjectsInScene){
+		//resend scenegraph to Direct X renderer	
+	if (m_toolInputCommands.deleteObjectsInScene && m_toolInputCommandsLastFrame.deleteObjectsInScene != m_toolInputCommands.deleteObjectsInScene) {
 		DeleteObjects();
-		m_toolInputCommands.deleteObjectsInScene = false;
 	}
-	
 
 	if (m_toolInputCommands.mouseLeftButtonDown) {
 		MouseClick();
-		
 	}
-
-	//for (int i = 0; i < m_sceneGraph.size(); i++) {
-	//	m_sceneGraph[i].scaX = 1;
-	//	m_sceneGraph[i].scaY = 1;
-	//	m_sceneGraph[i].scaZ = 1;		
-	//}
-	//for (int i = 0; i < m_selectedID.size(); i++) {
-	//	m_sceneGraph[m_selectedID.at(i)].scaX = 5;
-	//	m_sceneGraph[m_selectedID.at(i)].scaY = 5;
-	//	m_sceneGraph[m_selectedID.at(i)].scaZ = 5;
-	//}
-
 
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);
@@ -338,7 +323,6 @@ void ToolMain::UpdateInput(MSG * msg)
 	case WM_KEYDOWN:
 		m_keyArray[msg->wParam] = true;
 		break;
-
 	case WM_KEYUP:
 		m_keyArray[msg->wParam] = false;
 		break;
@@ -426,7 +410,10 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.controlButton = false;
 	}
 	if (m_keyArray[46]) {
-		m_toolInputCommands.deleteObjectsInScene = true;
+		m_toolInputCommands.deleteObjectsInScene = true;	
+	}
+	else {
+		m_toolInputCommands.deleteObjectsInScene = false;
 	}
 	//WASD
 }
@@ -462,10 +449,6 @@ void ToolMain::MouseClick()
 				//Removes current object from selected object
 				m_selectedID.erase(m_selectedID.begin() + i);
 
-				/*m_sceneGraph[id].scaX = 1;
-				m_sceneGraph[id].scaY = 1;
-				m_sceneGraph[id].scaZ = 1;*/
-
 				pushID = false;
 			}
 			
@@ -478,12 +461,7 @@ void ToolMain::MouseClick()
 			//Removes all objects from selection apart from the current selected object
 			if (id != m_selectedID[i]) {
 
-				/*m_sceneGraph[m_selectedID[i]].scaX = 1;
-				m_sceneGraph[m_selectedID[i]].scaY = 1;
-				m_sceneGraph[m_selectedID[i]].scaZ = 1;*/
-
 				m_selectedID.erase(m_selectedID.begin() + i);
-
 			}
 			else {
 				pushID = false;
@@ -503,6 +481,13 @@ void ToolMain::MouseClick()
 
 }
 
+bool ToolMain::UpdateDeleteObjects() {
+	if (m_toolInputCommands.deleteObjectsInScene && m_toolInputCommandsLastFrame.deleteObjectsInScene != m_toolInputCommands.deleteObjectsInScene) {
+		return true;
+	}
+	return false;
+}
+
 //Delete Selected Objects
 void ToolMain::DeleteObjects()
 {
@@ -517,3 +502,4 @@ void ToolMain::DeleteObjects()
 	}
 	onActionRebuildScene();
 }
+

@@ -79,25 +79,16 @@ int MFCMain::Run()
 			switch (msg.message)
 			{
 				//Global inputs,  mouse position and keys etc
-
 			case WM_RBUTTONDOWN:
 				//m_ToolSelectDialogue.DeSelect
 				if (m_ToolSelectDialogue) {
 					m_ToolSelectDialogue.DeSelect();
 				}
 				break;
-			case WM_KEYFIRST:
+			case WM_KEYDOWN:
 				//Press Delete
 				if (msg.wParam == 46)
 				{
-					if (m_ToolSelectDialogue) {
-						if (m_ToolSelectDialogue.DeleteSelected()) {
-							//m_ToolSystem.onActionRebuildScene();
-						}
-					}
-				}
-
-				if (m_ToolSelectDialogue) {
 
 				}
 			
@@ -107,11 +98,15 @@ int MFCMain::Run()
 		else
 		{	
 			//int ID = m_ToolSystem.getCurrentSelectionID();
-			
-
 			//std::wstring statusString = L"Selected Object: " + std::to_wstring(ID);
+
+			if (m_ToolSystem.UpdateDeleteObjects()) {
+				m_ToolSelectDialogue.DeleteSelected();
+			}
+
 			m_ToolSystem.Tick(&msg);
 
+			//Updates teh selected
 			if (m_ToolSelectDialogue && m_ToolSystem.UpdateSelected) {
 				m_ToolSelectDialogue.UpdatedSelected();
 				m_ToolSystem.UpdateSelected = false;
@@ -123,7 +118,8 @@ int MFCMain::Run()
 				if (m_ToolSelectDialogue) {
 					m_ToolSelectDialogue.UpdateList();
 					m_ToolSelectDialogue.UpdatedSelected();
-				}				
+				}
+				
 				m_ToolTextureDialogue.RebuildScene = false;
 				m_ToolCreateObjectDialogue.RebuildScene = false;
 			}
@@ -157,6 +153,7 @@ void MFCMain::MenuEditSelect()
 
 	//modeless dialogue must be declared in the class.   If we do local it will go out of scope instantly and destroy itself
 	
+	//Initialises object selection box
 	if (!m_ToolSelectDialogue) {
 		m_ToolSelectDialogue.Create(IDD_DIALOG1);	//Start up modeless
 		m_ToolSelectDialogue.ShowWindow(SW_SHOW);	//show modeless
@@ -171,6 +168,7 @@ void MFCMain::MenuEditSelect()
 
 void MFCMain::MenuTextureSelect()
 {
+	//Initialises Texture selection box
 	if (!m_ToolTextureDialogue) {
 		m_ToolTextureDialogue.Create(IDD_DIALOG2);	//Start up modeless
 		m_ToolTextureDialogue.ShowWindow(SW_SHOW);	//show modeless
@@ -183,6 +181,7 @@ void MFCMain::MenuTextureSelect()
 
 void MFCMain::MenuCreateObjectSelect()
 {
+	//Initialises object creation dialog box
 	if (!m_ToolCreateObjectDialogue) {
 		m_ToolCreateObjectDialogue.Create(IDD_DIALOG3);	//Start up modeless
 		m_ToolCreateObjectDialogue.ShowWindow(SW_SHOW);	//show modeless
@@ -193,19 +192,22 @@ void MFCMain::MenuCreateObjectSelect()
 	}
 }
 
+//Saves the scene
 void MFCMain::ToolBarButton1()
 {	
 	m_ToolSystem.onActionSave();
 }
 
+//Used to load the saved scene
 void MFCMain::ToolBarButton2() {
 	m_ToolSystem.onActionLoad();
 	if (m_ToolSelectDialogue) {
-		m_ToolSelectDialogue.SetObjectData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedID);
+		m_ToolSelectDialogue.UpdateList();
 	}
+
 	MessageBox(NULL, L"Level Loaded", L"Notification", MB_OK);
 }
-
+//Rebuilds the rendered scene
 void MFCMain::OnActionRebuildScene()
 {
 	m_ToolSystem.onActionRebuildScene();

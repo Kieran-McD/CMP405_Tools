@@ -25,6 +25,8 @@ public: //methods
 
 	afx_msg void onActionRebuildScene();
 
+	bool UpdateDeleteObjects();
+
 	void	Tick(MSG *msg);
 	void	UpdateInput(MSG *msg);
 

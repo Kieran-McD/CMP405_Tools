@@ -31,7 +31,9 @@ private:
 	CreateObjectDialogue m_ToolCreateObjectDialogue;
 	int m_width;		
 	int m_height;
-	
+	bool m_deleted;
+
+
 	//Interface funtions for menu and toolbar etc requires
 	afx_msg void MenuFileQuit();
 	afx_msg void MenuFileSaveTerrain();
