@@ -106,6 +106,12 @@ int MFCMain::Run()
 			std::wstring statusString = L"Selected Object: " + std::to_wstring(ID);
 			m_ToolSystem.Tick(&msg);
 
+			if (m_ToolTextureDialogue.RebuildScene) {
+				m_ToolSystem.onActionRebuildScene();
+				m_ToolTextureDialogue.RebuildScene = false;
+			}
+			
+
 			//send current object ID to status bar in The main frame
 			m_frame->m_wndStatusBar.SetPaneText(1, statusString.c_str(), 1);	
 		}

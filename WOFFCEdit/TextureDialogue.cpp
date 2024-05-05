@@ -41,6 +41,7 @@ void TextureDialogue::Select()
 			m_sceneGraph->at(i).tex_diffuse_path = pszConvertedAnsiString;
 		}		
 	}
+	RebuildScene = true;
 }
 
 BOOL TextureDialogue::OnInitDialog()
