@@ -52,7 +52,7 @@ public:
 	void ClearDisplayList();
 
 	//Inputs
-	int MouseClick();
+	int MousePicking();
 
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();

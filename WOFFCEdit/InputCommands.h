@@ -23,4 +23,7 @@ struct InputCommands
 
 	bool controlButton;
 	bool deleteObjectsInScene;
+	bool copyObjectsInScene;
+	bool cutObjectsInScene;
+	bool pasteObjectsInScene;
 };

@@ -26,9 +26,12 @@ public: //methods
 	afx_msg void onActionRebuildScene();
 
 	bool UpdateDeleteObjects();
+	bool UpdateList();
 
 	void	Tick(MSG *msg);
 	void	UpdateInput(MSG *msg);
+
+	void UpdateLastFrameInput();
 
 public:	//variables
 	std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
@@ -59,4 +62,10 @@ private:	//variables
 	
 	void MouseClick();
 	void DeleteObjects();
+
+	std::vector<SceneObject> copiedObjectData;
+
+	void Copy();
+	void Cut();
+	void Paste();
 };
