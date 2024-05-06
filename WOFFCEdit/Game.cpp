@@ -531,7 +531,7 @@ void Game::CreateWindowSizeDependentResources()
 	
 }
 
-int Game::MouseClick()
+int Game::MousePicking()
 {
     float rayDistance = INFINITY;
     float closestDistance = INFINITY;
@@ -560,8 +560,6 @@ int Game::MouseClick()
         dir.Normalize();
         Ray ray = Ray(mousePos,dir);
 
-        //Below looks for the closest object to the mouse
-        float tempDistance = Vector3::Distance(m_displayList[i].m_position, mousePos);
         //Ray trace intersection
         if (ray.Intersects(m_displayList[i].m_model->meshes[0]->boundingBox, rayDistance)) {
             //Checks the current ray trace distance with the closest distance

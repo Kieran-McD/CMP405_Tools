@@ -300,6 +300,15 @@ void ToolMain::Tick(MSG *msg)
 		DeleteObjects();
 	}
 
+	if (m_toolInputCommands.copyObjectsInScene && m_toolInputCommandsLastFrame.copyObjectsInScene != m_toolInputCommands.copyObjectsInScene) {
+		Copy();
+	}
+	if (m_toolInputCommands.cutObjectsInScene && m_toolInputCommandsLastFrame.cutObjectsInScene != m_toolInputCommands.cutObjectsInScene) {
+		Cut();
+	}
+	if (m_toolInputCommands.pasteObjectsInScene && m_toolInputCommandsLastFrame.pasteObjectsInScene != m_toolInputCommands.pasteObjectsInScene) {
+		Paste();
+	}
 	if (m_toolInputCommands.mouseLeftButtonDown) {
 		MouseClick();
 	}
@@ -311,8 +320,6 @@ void ToolMain::Tick(MSG *msg)
 	m_toolInputCommands.mouseYDrag = 0;
 
 	m_toolInputCommands.mouseLeftButtonDown = false;
-	m_toolInputCommandsLastFrame = m_toolInputCommands;
-
 }
 
 void ToolMain::UpdateInput(MSG * msg)
@@ -410,17 +417,36 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.controlButton = false;
 	}
 	if (m_keyArray[46]) {
-		m_toolInputCommands.deleteObjectsInScene = true;	
+		m_toolInputCommands.deleteObjectsInScene = true;
 	}
 	else {
 		m_toolInputCommands.deleteObjectsInScene = false;
 	}
+	if (m_keyArray['C'] && m_toolInputCommands.controlButton) {
+		m_toolInputCommands.copyObjectsInScene = true;
+	}
+	else m_toolInputCommands.copyObjectsInScene = false;
+	if(m_keyArray['X'] && m_toolInputCommands.controlButton) {
+		m_toolInputCommands.cutObjectsInScene = true;
+	}
+	else m_toolInputCommands.cutObjectsInScene = false;
+	if (m_keyArray['V'] && m_toolInputCommands.controlButton) {
+		m_toolInputCommands.pasteObjectsInScene = true;
+	}
+	else m_toolInputCommands.pasteObjectsInScene = false;
+
+
 	//WASD
+}
+
+void ToolMain::UpdateLastFrameInput()
+{
+	m_toolInputCommandsLastFrame = m_toolInputCommands;
 }
 
 void ToolMain::MouseClick()
 {
-	int id = m_d3dRenderer.MouseClick();
+	int id = m_d3dRenderer.MousePicking();
 	UpdateSelected = true;
 
 	if (id < 0 && !m_toolInputCommands.controlButton) {
@@ -485,20 +511,56 @@ bool ToolMain::UpdateDeleteObjects() {
 	if (m_toolInputCommands.deleteObjectsInScene && m_toolInputCommandsLastFrame.deleteObjectsInScene != m_toolInputCommands.deleteObjectsInScene) {
 		return true;
 	}
+	if (m_toolInputCommands.cutObjectsInScene && m_toolInputCommandsLastFrame.cutObjectsInScene != m_toolInputCommands.cutObjectsInScene) {
+		return true;
+	}
+	return false;
+}
+
+bool ToolMain::UpdateList()
+{
+	if (m_toolInputCommands.pasteObjectsInScene && m_toolInputCommandsLastFrame.pasteObjectsInScene != m_toolInputCommands.pasteObjectsInScene) {
+		return true;
+	}
 	return false;
 }
 
 //Delete Selected Objects
 void ToolMain::DeleteObjects()
 {
+	//Sort the ids in order from lowest to highest
 	std::sort(m_selectedID.begin(), m_selectedID.end());
 	for (int i = m_selectedID.size() - 1; i > -1; i--) {
+		//Checks if the current object is the last object in the scene
 		if (m_sceneGraph.size() == 1) {
 			onActionRebuildScene();
 			return;
 		}
 		m_sceneGraph.erase(m_sceneGraph.begin() + m_selectedID[i]);
 		m_selectedID.erase(m_selectedID.begin() + i);
+	}
+	onActionRebuildScene();
+}
+
+void ToolMain::Copy()
+{
+	copiedObjectData.clear();
+	for (int i = 0; i < m_selectedID.size(); i++) {
+		copiedObjectData.push_back(m_sceneGraph.at(m_selectedID[i]));
+	}
+
+}
+
+void ToolMain::Cut()
+{
+	Copy();
+	DeleteObjects();
+}
+
+void ToolMain::Paste()
+{
+	for (int i = 0; i < copiedObjectData.size(); i++) {
+		m_sceneGraph.push_back(copiedObjectData[i]);
 	}
 	onActionRebuildScene();
 }
