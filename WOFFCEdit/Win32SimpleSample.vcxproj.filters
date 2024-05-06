@@ -66,6 +66,9 @@
     <ClCompile Include="CreateObjectDialogue.cpp">
       <Filter>MFC</Filter>
     </ClCompile>
+    <ClCompile Include="CFloatEdit.cpp">
+      <Filter>MFC</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeviceResources.h">
@@ -120,6 +123,9 @@
       <Filter>MFC</Filter>
     </ClInclude>
     <ClInclude Include="CreateObjectDialogue.h">
+      <Filter>MFC</Filter>
+    </ClInclude>
+    <ClInclude Include="CFloatEdit.h">
       <Filter>MFC</Filter>
     </ClInclude>
   </ItemGroup>

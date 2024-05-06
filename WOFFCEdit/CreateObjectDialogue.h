@@ -4,6 +4,7 @@
 #include "afxwin.h"
 #include "SceneObject.h"
 #include <vector>
+#include "CFloatEdit.h"
 
 class CreateObjectDialogue : public CDialogEx
 {
@@ -22,7 +23,6 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	afx_msg void End();		//kill the dialogue
-	afx_msg void Select();	//Item has been selected
 
 	int* m_currentSelection;
 
@@ -38,22 +38,18 @@ public:
 	CComboBox m_textureComboBox;
 
 	CEdit m_idNumEdit;
-	CEdit m_scaleXEdit;
-	CEdit m_scaleYEdit;
-	CEdit m_scaleZEdit;
+	CFloatEdit m_scaleXEdit;
+	CFloatEdit m_scaleYEdit;
+	CFloatEdit m_scaleZEdit;
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
 
 	void RetrieveData(std::vector<SceneObject>* SceneGraph);
-	void DeSelect();
-	bool DeleteSelected();
 
 	afx_msg void OnBnClickedOk();
-	afx_msg void OnLbnSelchangeList1();
 
 	bool RebuildScene;
 };
 
 
-INT_PTR CALLBACK SelectProc(HWND   hwndDlg, UINT   uMsg, WPARAM wParam, LPARAM lParam);
 

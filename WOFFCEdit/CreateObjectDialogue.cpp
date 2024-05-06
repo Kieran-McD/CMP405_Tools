@@ -4,9 +4,9 @@ IMPLEMENT_DYNAMIC(CreateObjectDialogue, CDialogEx)
 
 //Message map.  Just like MFCMAIN.cpp.  This is where we catch button presses etc and point them to a handy dandy method.
 BEGIN_MESSAGE_MAP(CreateObjectDialogue, CDialogEx)
-	ON_COMMAND(IDOK, &CreateObjectDialogue::End)					//ok button
+	//ok button
 	ON_BN_CLICKED(IDCREATE, &CreateObjectDialogue::OnBnClickedOk)
-	ON_LBN_SELCHANGE(IDC_COMBO2, &CreateObjectDialogue::Select)	//listbox
+
 END_MESSAGE_MAP()
 
 CreateObjectDialogue::CreateObjectDialogue(CWnd* pParent, std::vector<SceneObject>* SceneGraph)
@@ -37,10 +37,7 @@ void CreateObjectDialogue::DoDataExchange(CDataExchange* pDX)
 
 void CreateObjectDialogue::End()
 {
-}
-
-void CreateObjectDialogue::Select()
-{
+		
 }
 
 BOOL CreateObjectDialogue::OnInitDialog()
@@ -112,23 +109,14 @@ void CreateObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph)
 	m_textureComboBox.SetCurSel(0);
 	
 	//Sets the inital state for the edit control boxes
-	m_idNumEdit.SetLimitText(4);
+	m_idNumEdit.SetLimitText(7);
 	m_idNumEdit.SetWindowTextW(_T("0"));
-	m_scaleXEdit.SetLimitText(4);
+	m_scaleXEdit.SetLimitText(7);
 	m_scaleXEdit.SetWindowTextW(_T("1"));
-	m_scaleYEdit.SetLimitText(4);
+	m_scaleYEdit.SetLimitText(7);
 	m_scaleYEdit.SetWindowTextW(_T("1"));
-	m_scaleZEdit.SetLimitText(4);
+	m_scaleZEdit.SetLimitText(7);
 	m_scaleZEdit.SetWindowTextW(_T("1"));
-}
-
-void CreateObjectDialogue::DeSelect()
-{
-}
-
-bool CreateObjectDialogue::DeleteSelected()
-{
-	return false;
 }
 
 void CreateObjectDialogue::OnBnClickedOk()
