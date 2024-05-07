@@ -81,9 +81,9 @@ int MFCMain::Run()
 				//Global inputs,  mouse position and keys etc
 			case WM_RBUTTONDOWN:
 				//m_ToolSelectDialogue.DeSelect
-				if (m_ToolSelectDialogue) {
-					m_ToolSelectDialogue.DeSelect();
-				}
+				//if (m_ToolSelectDialogue) {
+				//	m_ToolSelectDialogue.DeSelect();
+				//}
 				break;
 			case WM_KEYDOWN:
 				//Press Delete
@@ -109,8 +109,9 @@ int MFCMain::Run()
 			m_ToolSystem.Tick(&msg);
 
 			//Updates the selected
-			if (m_ToolSelectDialogue && m_ToolSystem.UpdateSelected) {
-				m_ToolSelectDialogue.UpdatedSelected();
+			if (m_ToolSystem.UpdateSelected) {
+				if(m_ToolSelectDialogue) m_ToolSelectDialogue.UpdatedSelected();
+				
 				m_ToolSystem.UpdateSelected = false;
 			}
 			if (m_ToolSelectDialogue) {
