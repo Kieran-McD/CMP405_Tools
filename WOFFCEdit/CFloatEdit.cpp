@@ -8,14 +8,38 @@ BEGIN_MESSAGE_MAP(CFloatEdit, CEdit)
 END_MESSAGE_MAP()
 
 
-void CFloatEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+CFloatEdit::CFloatEdit()
 {
 
+}
+
+CFloatEdit::~CFloatEdit()
+{
+}
+
+float CFloatEdit::GetFloatValue()
+{
+	CString text;
+	GetWindowTextW(text);
+	return _ttof(text);;
+}
+
+void CFloatEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	//Used to accept only valid keys
 	if (nChar >= _T('0') && nChar <= _T('9' || nChar == _T('.') || nChar == VK_BACK)) {
 		//Call CEdit On Char
 		CEdit::OnChar(nChar, nRepCnt, nFlags);
+		return;
 	}
-	
+
+	int cursorSlot;
+	GetSel(cursorSlot, cursorSlot);
+	//Only able to put a minus at the start of the edit box
+	if (nChar == _T('-') && cursorSlot == 0) {
+		CEdit::OnChar(nChar, nRepCnt, nFlags);
+	}
+
 #pragma region  OldMethod
 	//CString editBoxString = "";
 	////Sets up id for scene object
@@ -56,10 +80,11 @@ void CFloatEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 void CFloatEdit::OnKillFocus(CWnd* cwnd)
 {
 	CEdit::OnKillFocus(cwnd);
-
+	//Checks if there is a value inside the box
 	if (GetWindowTextLengthW() == 0) {
 		SetWindowTextW(_T("0"));
 	}
+	//Checks to see if there is multiple periods in the box
 	else {
 		CString text;
 		GetWindowTextW(text);
@@ -83,3 +108,5 @@ void CFloatEdit::OnKillFocus(CWnd* cwnd)
 	}
 
 }
+
+#

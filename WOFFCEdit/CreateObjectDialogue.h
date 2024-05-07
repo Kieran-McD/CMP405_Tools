@@ -41,6 +41,10 @@ public:
 	CFloatEdit m_scaleXEdit;
 	CFloatEdit m_scaleYEdit;
 	CFloatEdit m_scaleZEdit;
+
+	CFloatEdit m_posXEdit;
+	CFloatEdit m_posYEdit;
+	CFloatEdit m_posZEdit;
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
 

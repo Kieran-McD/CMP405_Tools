@@ -203,8 +203,8 @@ void Game::Render()
         m_deviceResources->PIXBeginEvent(L"Draw model");
 
         DisplayObject object = m_displayList[m_selectedID->at(i)];
-        const XMVECTORF32 scale = {0.5f, 0.5f, 0.5f };
-        const XMVECTORF32 translate = { object.m_position.x, object.m_model->meshes[0]->boundingBox.Center.y + 1 * object.m_scale.y + 1, object.m_position.z };
+        const XMVECTORF32 scale = {object.m_scale.x/2.f, object.m_scale.y / 2.f, object.m_scale.z / 2.f };
+        const XMVECTORF32 translate = { object.m_position.x, object.m_position.y + object.m_model->meshes[0]->boundingBox.Center.x * object.m_scale.y * 2 + 1 * object.m_scale.y + 1, object.m_position.z };
         XMVECTOR rotate = Quaternion::CreateFromYawPitchRoll(object.m_orientation.y * 3.1415 / 180,
             object.m_orientation.x-180 * 3.1415 / 180,
             object.m_orientation.z * 3.1415 / 180);
@@ -524,7 +524,7 @@ void Game::CreateWindowSizeDependentResources()
 
     auto size = m_deviceResources->GetOutputSize();
     float aspectRatio = float(size.right) / float(size.bottom);
-   
+    m_windowSize = size;
     m_cam.SetUpProjectionMatrix(aspectRatio);
 
     m_batchEffect->SetProjection(m_cam.GetProjectionMatrix());

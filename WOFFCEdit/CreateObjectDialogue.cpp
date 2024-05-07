@@ -33,6 +33,9 @@ void CreateObjectDialogue::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT2, m_scaleYEdit);
 	DDX_Control(pDX, IDC_EDIT3, m_scaleZEdit);
 	DDX_Control(pDX, IDC_EDIT4, m_idNumEdit);
+	DDX_Control(pDX, IDC_EDIT5, m_posXEdit);
+	DDX_Control(pDX, IDC_EDIT6, m_posYEdit);
+	DDX_Control(pDX, IDC_EDIT7, m_posZEdit);
 }
 
 void CreateObjectDialogue::End()
@@ -111,12 +114,20 @@ void CreateObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph)
 	//Sets the inital state for the edit control boxes
 	m_idNumEdit.SetLimitText(7);
 	m_idNumEdit.SetWindowTextW(_T("0"));
+
 	m_scaleXEdit.SetLimitText(7);
 	m_scaleXEdit.SetWindowTextW(_T("1"));
 	m_scaleYEdit.SetLimitText(7);
 	m_scaleYEdit.SetWindowTextW(_T("1"));
 	m_scaleZEdit.SetLimitText(7);
 	m_scaleZEdit.SetWindowTextW(_T("1"));
+
+	m_posXEdit.SetLimitText(7);
+	m_posXEdit.SetWindowTextW(_T("1"));
+	m_posYEdit.SetLimitText(7);
+	m_posYEdit.SetWindowTextW(_T("1"));
+	m_posZEdit.SetLimitText(7);
+	m_posZEdit.SetWindowTextW(_T("1"));
 }
 
 void CreateObjectDialogue::OnBnClickedOk()
@@ -140,13 +151,15 @@ void CreateObjectDialogue::OnBnClickedOk()
 	m_idNumEdit.GetWindowTextW(text);
 	NewSceneObject.ID = _ttof(text);
 
-	//Sets up scale for scene object
-	m_scaleXEdit.GetWindowTextW(text);
-	NewSceneObject.scaX = _ttof(text);
-	m_scaleYEdit.GetWindowTextW(text);
-	NewSceneObject.scaY = _ttof(text);
-	m_scaleZEdit.GetWindowTextW(text);
-	NewSceneObject.scaZ = _ttof(text);
+	NewSceneObject.posX = m_posXEdit.GetFloatValue();
+	NewSceneObject.posY = m_posYEdit.GetFloatValue();
+	NewSceneObject.posZ = m_posZEdit.GetFloatValue();
+
+	NewSceneObject.scaX = m_scaleXEdit.GetFloatValue();
+	NewSceneObject.scaY = m_scaleYEdit.GetFloatValue();
+	NewSceneObject.scaZ = m_scaleZEdit.GetFloatValue();
+
+
 
 	//Pushed new scene object to storage
 	m_sceneGraph->push_back(NewSceneObject);

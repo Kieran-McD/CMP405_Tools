@@ -9,7 +9,10 @@
 class CFloatEdit : public CEdit
 {
 public:
-	void UpdateMap();
+	CFloatEdit();
+	~CFloatEdit();
+
+	float GetFloatValue();
 protected:
 	DECLARE_MESSAGE_MAP()
 
