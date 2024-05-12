@@ -2,7 +2,6 @@
 
 
 BEGIN_MESSAGE_MAP(CFloatEdit, CEdit)
-	//ON_EN_CHANGE(m_editControlBox, &CFloatEdit::Type)
 	ON_WM_CHAR()
 	ON_WM_KILLFOCUS()
 END_MESSAGE_MAP()
@@ -17,13 +16,14 @@ CFloatEdit::~CFloatEdit()
 {
 }
 
+//Returns the float value of the edit box
 float CFloatEdit::GetFloatValue()
 {
 	CString text;
 	GetWindowTextW(text);
 	return _ttof(text);;
 }
-
+//When a character is inputed into the edit box do this
 void CFloatEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	//Used to accept only valid keys
@@ -39,6 +39,8 @@ void CFloatEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	if (nChar == _T('-') && cursorSlot == 0) {
 		CEdit::OnChar(nChar, nRepCnt, nFlags);
 	}
+
+
 
 #pragma region  OldMethod
 	//CString editBoxString = "";
@@ -77,6 +79,7 @@ void CFloatEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	
 }
 
+//Handles when the user exits the edit box
 void CFloatEdit::OnKillFocus(CWnd* cwnd)
 {
 	CEdit::OnKillFocus(cwnd);

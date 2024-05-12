@@ -6,7 +6,7 @@ IMPLEMENT_DYNAMIC(CreateObjectDialogue, CDialogEx)
 BEGIN_MESSAGE_MAP(CreateObjectDialogue, CDialogEx)
 	//ok button
 	ON_BN_CLICKED(IDCREATE, &CreateObjectDialogue::OnBnClickedOk)
-
+	
 END_MESSAGE_MAP()
 
 CreateObjectDialogue::CreateObjectDialogue(CWnd* pParent, std::vector<SceneObject>* SceneGraph)
@@ -36,6 +36,9 @@ void CreateObjectDialogue::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT5, m_posXEdit);
 	DDX_Control(pDX, IDC_EDIT6, m_posYEdit);
 	DDX_Control(pDX, IDC_EDIT7, m_posZEdit);
+	DDX_Control(pDX, IDC_EDIT8, m_rotXEdit);
+	DDX_Control(pDX, IDC_EDIT9, m_rotYEdit);
+	DDX_Control(pDX, IDC_EDIT10, m_rotZEdit);
 }
 
 void CreateObjectDialogue::End()
@@ -67,6 +70,7 @@ void CreateObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph)
 		//Gets next file
 		bWorking = finder.FindNextFile();
 		int f = finder.GetFileName().Find(_T(".cmo"));
+		f += finder.GetFileName().Find(_T(".sdkmesh"));
 		CString s = finder.GetFileName();
 		//Checks if the current file is dds
 		if (f < 0) {
@@ -115,6 +119,7 @@ void CreateObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph)
 	m_idNumEdit.SetLimitText(7);
 	m_idNumEdit.SetWindowTextW(_T("0"));
 
+	//Setup scale boxes
 	m_scaleXEdit.SetLimitText(7);
 	m_scaleXEdit.SetWindowTextW(_T("1"));
 	m_scaleYEdit.SetLimitText(7);
@@ -122,14 +127,24 @@ void CreateObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph)
 	m_scaleZEdit.SetLimitText(7);
 	m_scaleZEdit.SetWindowTextW(_T("1"));
 
+	//Set up osition boxes
 	m_posXEdit.SetLimitText(7);
 	m_posXEdit.SetWindowTextW(_T("1"));
 	m_posYEdit.SetLimitText(7);
 	m_posYEdit.SetWindowTextW(_T("1"));
 	m_posZEdit.SetLimitText(7);
 	m_posZEdit.SetWindowTextW(_T("1"));
+
+	//Setup rotation boxes
+	m_rotXEdit.SetLimitText(7);
+	m_rotXEdit.SetWindowTextW(_T("0"));
+	m_rotYEdit.SetLimitText(7);
+	m_rotYEdit.SetWindowTextW(_T("0"));
+	m_rotZEdit.SetLimitText(7);
+	m_rotZEdit.SetWindowTextW(_T("0"));
 }
 
+//Handles on click ok which creates the object
 void CreateObjectDialogue::OnBnClickedOk()
 {
 	SceneObject NewSceneObject;
@@ -151,6 +166,7 @@ void CreateObjectDialogue::OnBnClickedOk()
 	m_idNumEdit.GetWindowTextW(text);
 	NewSceneObject.ID = _ttof(text);
 
+	//Sets up transform data of the object
 	NewSceneObject.posX = m_posXEdit.GetFloatValue();
 	NewSceneObject.posY = m_posYEdit.GetFloatValue();
 	NewSceneObject.posZ = m_posZEdit.GetFloatValue();
@@ -159,7 +175,9 @@ void CreateObjectDialogue::OnBnClickedOk()
 	NewSceneObject.scaY = m_scaleYEdit.GetFloatValue();
 	NewSceneObject.scaZ = m_scaleZEdit.GetFloatValue();
 
-
+	NewSceneObject.rotX = m_rotXEdit.GetFloatValue();
+	NewSceneObject.rotY = m_rotYEdit.GetFloatValue();
+	NewSceneObject.rotZ = m_rotZEdit.GetFloatValue();
 
 	//Pushed new scene object to storage
 	m_sceneGraph->push_back(NewSceneObject);

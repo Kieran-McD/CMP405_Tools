@@ -19,10 +19,9 @@ Game::Game()
     m_deviceResources = std::make_unique<DX::DeviceResources>();
     m_deviceResources->RegisterDeviceNotify(this);
 	m_displayList.clear();
-	
 	//initial Settings
 	//modes
-	m_grid = false;
+	m_grid = true;
 }
 
 Game::~Game()
@@ -94,10 +93,13 @@ void Game::Tick(InputCommands *Input)
 	//copy over the input commands so we have a local version to use elsewhere.
 	m_InputCommands = *Input;
 
+
+
     m_timer.Tick([&]()
     {
         Update(m_timer);
     });
+
 
 #ifdef DXTK_AUDIO
     // Only update audio engine once per frame
@@ -112,6 +114,85 @@ void Game::Tick(InputCommands *Input)
     Render();
 }
 
+void Game::UpdateWidgets()
+{
+    if (m_selectedID->size() > 0) {
+        for (int i = 0; i < m_widgetList.size(); i++) {
+
+            switch (i)
+            {
+            case 0:
+                m_widgetList[i].m_position = m_displayList[m_selectedID->at(0)].m_position;
+                break;
+            case 1:
+                m_widgetList[i].m_position = m_displayList[m_selectedID->at(0)].m_position;
+                m_widgetList[i].m_orientation = Vector3(0, 0, 90);
+                break;
+            case 2:
+                m_widgetList[i].m_position = m_displayList[m_selectedID->at(0)].m_position;
+                m_widgetList[i].m_orientation = Vector3(0, 270, 0);
+                break;
+            }
+
+            DisplayObject object = m_widgetList[i];
+
+            Vector3 direction = Vector3(object.m_position.x, object.m_position.y, object.m_position.z) - m_cam.GetCamPosition();
+            direction.Normalize();
+
+            m_widgetList[i].m_position = m_cam.GetCamPosition() + direction * 3.f;
+
+            switch (i)
+            {
+            case 0:
+                m_widgetList[i].m_position += Vector3(0.375f, 0, 0);
+                break;
+            case 1:
+                m_widgetList[i].m_position += Vector3(0, 0.375f, 0);
+                break;
+            case 2:
+                m_widgetList[i].m_position += Vector3(0, 0, 0.375f);
+                break;
+            }
+
+        }
+    }
+}
+
+void Game::UpdateMoveWidget()
+{
+    if (m_selectedID->size() < 1) return;
+    if (!m_InputCommands.mouseLeftButtonDown) return;
+    Vector3 point;
+
+    //Gets the mouse position in screen and forward
+    Vector3 mouseScreenPos = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 0);
+    Vector3 mouseForward = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 1.f);
+    int id = 0;
+
+    DisplayObject currentobject = m_widgetList.at(0);
+    //Objects tranlation data
+    XMVECTOR  objectScale = { currentobject.m_scale.x,		currentobject.m_scale.y,		currentobject.m_scale.z };
+    XMVECTOR  objectTranslation = { currentobject.m_position.x,	currentobject.m_position.y,	currentobject.m_position.z };
+    XMVECTOR  objectRotation = Quaternion::CreateFromYawPitchRoll(currentobject.m_orientation.y * 3.1415 / 180, currentobject.m_orientation.x * 3.1415 / 180, currentobject.m_orientation.z * 3.1415 / 180);
+
+    //Get World Matrix of Current Object
+    XMMATRIX localWorldMatrix = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, objectScale, g_XMZero, objectRotation, objectTranslation);
+
+    //Unprojects the mouse into the world
+    Vector3  nearPlane = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+    Vector3  farPlane = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+
+    //Vector3  pickingVector = (farPlane - nearPlane);
+    //pickingVector = XMVector3Normalize(pickingVector);
+    float dotPro;
+
+    dotPro = (nearPlane - testPosition).Dot(farPlane - nearPlane) / (farPlane - nearPlane).LengthSquared();
+    point = nearPlane + dotPro * (farPlane - nearPlane);
+    
+    m_displayList.at(m_selectedID->at(0)).m_position = point;
+
+}
+
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {   
@@ -119,6 +200,8 @@ void Game::Update(DX::StepTimer const& timer)
 
 
     m_cam.Update(m_InputCommands);
+    //UpdateMoveWidget();
+    UpdateWidgets();
 
     m_batchEffect->SetView(m_cam.GetViewMatrix());
     m_batchEffect->SetWorld(Matrix::Identity);
@@ -178,7 +261,6 @@ void Game::Render()
 		DrawGrid(xaxis, yaxis, g_XMZero, 512, 512, Colors::Gray);
 	}
 	
-
 	//RENDER OBJECTS FROM SCENEGRAPH
 	int numRenderObjects = m_displayList.size();
 	for (int i = 0; i < numRenderObjects; i++)
@@ -200,7 +282,7 @@ void Game::Render()
 
     //Renders object to identify selected objects
     for (int i = 0; i < m_selectedID->size(); i++) {
-        m_deviceResources->PIXBeginEvent(L"Draw model");
+        m_deviceResources->PIXBeginEvent(L"Draw highlight");
 
         DisplayObject object = m_displayList[m_selectedID->at(i)];
         const XMVECTORF32 scale = {object.m_scale.x/2.f, object.m_scale.y / 2.f, object.m_scale.z / 2.f };
@@ -215,6 +297,7 @@ void Game::Render()
         m_deviceResources->PIXEndEvent();
     }
 
+
     m_deviceResources->PIXEndEvent();
 
 	//RENDER TERRAIN
@@ -225,6 +308,32 @@ void Game::Render()
 
 	//Render the batch,  This is handled in the Display chunk becuase it has the potential to get complex
 	m_displayChunk.RenderBatch(m_deviceResources);
+
+    if (m_selectedID->size() > 0) {
+        m_deviceResources->PIXBeginEvent(L"Draw Widget");
+        context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+        context->OMSetDepthStencilState(m_states->DepthNone(), 0);
+        context->RSSetState(m_states->CullCounterClockwise());
+        for (int i = 0; i < m_widgetList.size(); i++) {
+
+            DisplayObject object = m_widgetList[i];
+            const XMVECTORF32 scale = { object.m_scale.x,object.m_scale.y,object.m_scale.z };
+
+            const XMVECTORF32 translate = { object.m_position.x, object.m_position.y, object.m_position.z };
+
+
+            XMVECTOR rotate = Quaternion::CreateFromYawPitchRoll(object.m_orientation.y * 3.1415 / 180,
+                object.m_orientation.x * 3.1415 / 180,
+                object.m_orientation.z * 3.1415 / 180);
+
+
+            XMMATRIX local = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, scale, g_XMZero, rotate, translate);
+
+            object.m_model->meshes[0]->Draw(context, local, m_cam.GetViewMatrix(), m_cam.GetProjectionMatrix());	//last variable in draw,  make TRUE for wireframe       
+
+        }
+        m_deviceResources->PIXEndEvent();
+    }
 
     //CAMERA POSITION ON HUD
     m_sprites->Begin();
@@ -368,9 +477,16 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 		//std::wstring modelwstr = StringToWCHART(SceneGraph->at(i).model_path);							//convect string to Wchar
         std::wstring modelwstr = StringToWCHART(SceneGraph->at(i).model_path);
         
-        newDisplayObject.m_model = Model::CreateFromCMO(device, modelwstr.c_str(), *m_fxFactory, true);	//get DXSDK to load model "False" for LH coordinate system (maya)
+        int c = modelwstr.find(StringToWCHART(".cmo"), 0);
+        int s = modelwstr.find(StringToWCHART(".sdkmesh"), 0);
 
-		//Load Texture
+        if (c > -1) {
+            newDisplayObject.m_model = Model::CreateFromCMO(device, modelwstr.c_str(), *m_fxFactory, true);	//get DXSDK to load model "False" for LH coordinate system (maya)
+        }
+        else if(s > -1) {
+            newDisplayObject.m_model = Model::CreateFromSDKMESH(device, modelwstr.c_str(), *m_fxFactory, true);
+        }
+      //Load Texture
 		std::wstring texturewstr = StringToWCHART(SceneGraph->at(i).tex_diffuse_path);								//convect string to Wchar
 		HRESULT rs = NULL;
 
@@ -413,25 +529,79 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
 		newDisplayObject.m_render		= SceneGraph->at(i).editor_render;
 		newDisplayObject.m_wireframe	= SceneGraph->at(i).editor_wireframe;
 
-		newDisplayObject.m_light_type		= SceneGraph->at(i).light_type;
-		newDisplayObject.m_light_diffuse_r	= SceneGraph->at(i).light_diffuse_r;
-		newDisplayObject.m_light_diffuse_g	= SceneGraph->at(i).light_diffuse_g;
-		newDisplayObject.m_light_diffuse_b	= SceneGraph->at(i).light_diffuse_b;
-		newDisplayObject.m_light_specular_r = SceneGraph->at(i).light_specular_r;
-		newDisplayObject.m_light_specular_g = SceneGraph->at(i).light_specular_g;
-		newDisplayObject.m_light_specular_b = SceneGraph->at(i).light_specular_b;
-		newDisplayObject.m_light_spot_cutoff = SceneGraph->at(i).light_spot_cutoff;
-		newDisplayObject.m_light_constant	= SceneGraph->at(i).light_constant;
-		newDisplayObject.m_light_linear		= SceneGraph->at(i).light_linear;
-		newDisplayObject.m_light_quadratic	= SceneGraph->at(i).light_quadratic;
-		
-       
-
 		m_displayList.push_back(newDisplayObject);
         
         
 	}
-				
+	
+    //Releases the m_texture_diffuse from memory
+    for (int i = 0; i < m_widgetList.size(); i++) {
+        m_widgetList[i].m_texture_diffuse->Release();
+        m_widgetList[i].m_texture_diffuse = NULL;
+    }
+
+    if (!m_displayList.empty())		//is the vector empty
+    {
+        m_widgetList.clear();		//if not, empty it
+    }
+
+    numObjects = 3;
+
+    for (int i = 0; i < numObjects; i++)
+    {
+        //create a temp display object that we will populate then append to the display list.
+        DisplayObject newDisplayObject;
+
+        //load model
+        //std::wstring modelwstr = StringToWCHART(SceneGraph->at(i).model_path);							//convect string to Wchar
+        std::wstring modelwstr = StringToWCHART("database/data/arrowX.cmo");
+        newDisplayObject.m_model = Model::CreateFromCMO(device, modelwstr.c_str(), *m_fxFactory, true);	//get DXSDK to load model "False" for LH coordinate system (maya)
+
+        //Load Texture
+        std::wstring texturewstr = StringToWCHART("database/data/placeholder.dds");								//convect string to Wchar
+        HRESULT rs = NULL;
+
+        rs = CreateDDSTextureFromFile(device, texturewstr.c_str(), nullptr, &newDisplayObject.m_texture_diffuse);	//load tex into Shader resource
+
+        //if texture fails.  load error default
+        if (rs)
+        {
+            CreateDDSTextureFromFile(device, L"database/data/Error.dds", nullptr, &newDisplayObject.m_texture_diffuse);	//load tex into Shader resource
+        }
+
+        //apply new texture to models effect
+        newDisplayObject.m_model->UpdateEffects([&](IEffect* effect) //This uses a Lambda function,  if you dont understand it: Look it up.
+        {
+            auto lights = dynamic_cast<BasicEffect*>(effect);
+            if (lights)
+            {
+                lights->SetTexture(newDisplayObject.m_texture_diffuse);
+            }
+        });
+
+        newDisplayObject.m_ID = -1;
+
+        //set position
+        newDisplayObject.m_position.x = 0;
+        newDisplayObject.m_position.y = 0;
+        newDisplayObject.m_position.z = 0;
+
+        //setorientation
+        newDisplayObject.m_orientation.x = 0;
+        newDisplayObject.m_orientation.y = 0;
+        newDisplayObject.m_orientation.z = 0;
+       
+        //set scale
+        newDisplayObject.m_scale.x = 0.75f;
+        newDisplayObject.m_scale.y = 0.1f;
+        newDisplayObject.m_scale.z = 0.1f;
+
+        //set wireframe / render flags
+        newDisplayObject.m_render = true;
+        newDisplayObject.m_wireframe = false;
+
+        m_widgetList.push_back(newDisplayObject);
+    }
 }
 
 void Game::BuildDisplayChunk(ChunkObject * SceneChunk)
@@ -541,33 +711,63 @@ int Game::MousePicking()
     Vector3 mouseScreenPos = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 0);
     Vector3 mouseForward = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 1.f);
     int id = 0;
-    for (int i = 0; i < m_displayList.size(); i++) {
-      
+
+    for (int i = 0; i < m_widgetList.size(); i++) {
+        rayDistance = INFINITY;
+        DisplayObject currentobject = m_widgetList.at(i);
         //Objects tranlation data
-        Vector3 objectScale = { m_displayList[i].m_scale.x,		m_displayList[i].m_scale.y,		m_displayList[i].m_scale.z };
-        Vector3 objectTranslation = { m_displayList[i].m_position.x,	m_displayList[i].m_position.y,	m_displayList[i].m_position.z };
-        Vector3 objectRotation = Quaternion::CreateFromYawPitchRoll(m_displayList[i].m_orientation.y * 3.1415 / 180, m_displayList[i].m_orientation.x * 3.1415 / 180, m_displayList[i].m_orientation.z * 3.1415 / 180);
+        XMVECTOR  objectScale = { currentobject.m_scale.x,		currentobject.m_scale.y,		currentobject.m_scale.z };
+        XMVECTOR  objectTranslation = { currentobject.m_position.x,	currentobject.m_position.y,	currentobject.m_position.z };
+        XMVECTOR  objectRotation = Quaternion::CreateFromYawPitchRoll(currentobject.m_orientation.y * 3.1415 / 180, currentobject.m_orientation.x * 3.1415 / 180, currentobject.m_orientation.z * 3.1415 / 180);
 
         //Get World Matrix of Current Object
         XMMATRIX localWorldMatrix = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, objectScale, g_XMZero, objectRotation, objectTranslation);
 
         //Unprojects the mouse into the world
-        Vector3 mousePos = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
-        Vector3 mousePosDirection = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+        Vector3  nearPlane = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+        Vector3  farPlane = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
 
-
-        Vector3 dir = (mousePosDirection - mousePos);
-        dir.Normalize();
-        Ray ray = Ray(mousePos,dir);
+        Vector3  pickingVector = (farPlane - nearPlane);
+        pickingVector = XMVector3Normalize(pickingVector);
+        Ray ray = Ray(nearPlane, pickingVector);
 
         //Ray trace intersection
-        if (ray.Intersects(m_displayList[i].m_model->meshes[0]->boundingBox, rayDistance)) {
-            //Checks the current ray trace distance with the closest distance
-            if (rayDistance < closestDistance) {
-                closestDistance = Vector3::Distance(m_displayList[i].m_position, mousePos);
-                currentDisplaySelected = &m_displayList[i];
-                id = i;
-            }         
+        if (ray.Intersects(currentobject.m_model->meshes[0]->boundingBox, rayDistance)) {
+            m_widgetClicked = true;
+            testPosition = nearPlane + pickingVector * rayDistance;
+            return -2;
+        }
+    }
+
+    for (int i = 0; i < m_displayList.size(); i++) {
+      
+        //Objects tranlation data
+        XMVECTOR objectScale = { m_displayList[i].m_scale.x,		m_displayList[i].m_scale.y,		m_displayList[i].m_scale.z };
+        XMVECTOR objectTranslation = { m_displayList[i].m_position.x,	m_displayList[i].m_position.y,	m_displayList[i].m_position.z };
+        XMVECTOR objectRotation = Quaternion::CreateFromYawPitchRoll(m_displayList[i].m_orientation.y * 3.1415 / 180, m_displayList[i].m_orientation.x * 3.1415 / 180, m_displayList[i].m_orientation.z * 3.1415 / 180);
+
+        //Get World Matrix of Current Object
+        XMMATRIX localWorldMatrix = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, objectScale, g_XMZero, objectRotation, objectTranslation);
+
+        //Unprojects the mouse into the world
+        XMVECTOR mousePos = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+        XMVECTOR mousePosDirection = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+
+
+        XMVECTOR pickingVector = (mousePosDirection - mousePos);
+        pickingVector = XMVector3Normalize(pickingVector);
+        Ray ray = Ray(mousePos, pickingVector);
+
+        for (int j = 0; j < m_displayList[i].m_model->meshes.size(); j++) {
+            //Ray trace intersection
+            if (ray.Intersects(m_displayList[i].m_model->meshes[j]->boundingBox, rayDistance)) {
+                //Checks the current ray trace distance with the closest distance
+                if (rayDistance < closestDistance) {
+                    closestDistance = Vector3::Distance(m_displayList[i].m_position, mousePos);
+                    currentDisplaySelected = &m_displayList[i];
+                    id = i;
+                }
+            }
         }
     }
     //Temporary fill in to show that the object is selected

@@ -83,6 +83,7 @@ void SelectDialogue::Select()
 			m_selectedObjectID->erase(std::remove(m_selectedObjectID->begin(), m_selectedObjectID->end(), index), m_selectedObjectID->end());			
 		}
 	}
+	m_listUpdated = true;
 
 	return;
 }

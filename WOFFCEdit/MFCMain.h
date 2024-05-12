@@ -11,6 +11,7 @@
 #include "SelectDialogue.h"
 #include "TextureDialogue.h"
 #include "CreateObjectDialogue.h"
+#include "ModifyObjectDialogue.h"
 
 class MFCMain : public CWinApp 
 {
@@ -29,6 +30,8 @@ private:
 	SelectDialogue m_ToolSelectDialogue;			//for modeless dialogue, declare it here
 	TextureDialogue m_ToolTextureDialogue;
 	CreateObjectDialogue m_ToolCreateObjectDialogue;
+	ModifyObjectDialogue m_ToolModifyObjectDialogue;
+
 	int m_width;		
 	int m_height;
 	bool m_deleted;
@@ -40,6 +43,7 @@ private:
 	afx_msg void MenuEditSelect();
 	afx_msg void MenuTextureSelect();
 	afx_msg void MenuCreateObjectSelect();
+	afx_msg void MenuModifyObjectSelect();
 	afx_msg	void ToolBarButton1();
 	afx_msg void ToolBarButton2();
 	afx_msg void OnActionRebuildScene();

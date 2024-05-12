@@ -54,6 +54,9 @@ public:
 	//Inputs
 	int MousePicking();
 
+	void UpdateWidgets();
+	void UpdateMoveWidget();
+
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
 #endif
@@ -75,6 +78,8 @@ private:
 	DisplayChunk						m_displayChunk;
 	InputCommands						m_InputCommands;
 
+	std::vector<DisplayObject> m_widgetList;
+
 	//Window Size
 	RECT m_windowSize;
 
@@ -85,6 +90,9 @@ private:
 
 	//control variables
 	bool m_grid;							//grid rendering on / off
+	bool m_widgetClicked;
+
+	Vector3 testPosition;
 	// Device resources.
     std::shared_ptr<DX::DeviceResources>    m_deviceResources;
 

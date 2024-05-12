@@ -46,6 +46,8 @@ public:
 
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnLbnSelchangeList1();
+
+	bool m_listUpdated;
 };
 
 

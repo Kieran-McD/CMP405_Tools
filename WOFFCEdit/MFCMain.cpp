@@ -8,6 +8,7 @@ BEGIN_MESSAGE_MAP(MFCMain, CWinApp)
 	ON_COMMAND(ID_EDIT_SELECT, &MFCMain::MenuEditSelect)
 	ON_COMMAND(ID_EDIT_TEXTURE, &MFCMain::MenuTextureSelect)
 	ON_COMMAND(ID_EDIT_CREATEOBJECT, &MFCMain::MenuCreateObjectSelect)
+	ON_COMMAND(ID_EDIT_MODIFYOBJECT, &MFCMain::MenuModifyObjectSelect)
 	ON_COMMAND(ID_BUTTON40001, &MFCMain::ToolBarButton1)
 	ON_COMMAND(ID_BUTTON40007, &MFCMain::ToolBarButton2)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_TOOL, &CMyFrame::OnUpdatePage)
@@ -111,18 +112,25 @@ int MFCMain::Run()
 			//Updates the selected
 			if (m_ToolSystem.UpdateSelected) {
 				if(m_ToolSelectDialogue) m_ToolSelectDialogue.UpdatedSelected();
-				
+				if (m_ToolModifyObjectDialogue) m_ToolModifyObjectDialogue.UpdateObjectList();
+
 				m_ToolSystem.UpdateSelected = false;
 			}
+
+			//Handles when the select object list needs updated
 			if (m_ToolSelectDialogue) {
 				if (m_ToolSystem.UpdateList()) {
 					m_ToolSelectDialogue.UpdateList();
 					m_ToolSelectDialogue.UpdatedSelected();
 				}
+				if (m_ToolSelectDialogue.m_listUpdated && m_ToolModifyObjectDialogue) {
+					m_ToolModifyObjectDialogue.UpdateObjectList();
+					m_ToolSelectDialogue.m_listUpdated = false;
+				}
 			}
-			
 
-			if (m_ToolTextureDialogue.RebuildScene || m_ToolCreateObjectDialogue.RebuildScene) {				
+			//Handles when the scene needs rebuilt
+			if (m_ToolTextureDialogue.RebuildScene || m_ToolCreateObjectDialogue.RebuildScene || m_ToolModifyObjectDialogue.RebuildScene) {				
 				m_ToolSystem.onActionRebuildScene();
 				if (m_ToolSelectDialogue) {
 					m_ToolSelectDialogue.UpdateList();
@@ -131,6 +139,7 @@ int MFCMain::Run()
 				
 				m_ToolTextureDialogue.RebuildScene = false;
 				m_ToolCreateObjectDialogue.RebuildScene = false;
+				m_ToolModifyObjectDialogue.RebuildScene = false;
 			}
 
 			m_ToolSystem.UpdateLastFrameInput();
@@ -155,6 +164,7 @@ void MFCMain::MenuFileSaveTerrain()
 	m_ToolSystem.onActionSaveTerrain();
 }
 
+//Handles launching the object selection menu
 void MFCMain::MenuEditSelect()
 {
 	//SelectDialogue m_ToolSelectDialogue(NULL, &m_ToolSystem.m_sceneGraph);		//create our dialoguebox //modal constructor
@@ -175,6 +185,7 @@ void MFCMain::MenuEditSelect()
 	
 }
 
+//Handles launching the texture modify menu
 void MFCMain::MenuTextureSelect()
 {
 	//Initialises Texture selection box
@@ -188,6 +199,7 @@ void MFCMain::MenuTextureSelect()
 	}
 }
 
+//Handles launching the create object menu
 void MFCMain::MenuCreateObjectSelect()
 {
 	//Initialises object creation dialog box
@@ -198,6 +210,20 @@ void MFCMain::MenuCreateObjectSelect()
 	}
 	else {
 		m_ToolCreateObjectDialogue.ShowWindow(SW_SHOW);
+	}
+}
+
+//Handles launching the modify object menu
+void MFCMain::MenuModifyObjectSelect()
+{
+	//Initialises object creation dialog box
+	if (!m_ToolModifyObjectDialogue) {
+		m_ToolModifyObjectDialogue.Create(IDD_DIALOG4);	//Start up modeless
+		m_ToolModifyObjectDialogue.ShowWindow(SW_SHOW);	//show modeless
+		m_ToolModifyObjectDialogue.RetrieveData(&m_ToolSystem.m_sceneGraph, &m_ToolSystem.m_selectedID);
+	}
+	else {
+		m_ToolModifyObjectDialogue.ShowWindow(SW_SHOW);
 	}
 }
 

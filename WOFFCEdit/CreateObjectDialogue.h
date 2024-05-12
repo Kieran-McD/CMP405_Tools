@@ -33,7 +33,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	// Control variable for more efficient access of the listbox
+	//Dialgoue Box controls
 	CComboBox m_modelComboBox;
 	CComboBox m_textureComboBox;
 
@@ -45,6 +45,11 @@ public:
 	CFloatEdit m_posXEdit;
 	CFloatEdit m_posYEdit;
 	CFloatEdit m_posZEdit;
+
+	CFloatEdit m_rotXEdit;
+	CFloatEdit m_rotYEdit;
+	CFloatEdit m_rotZEdit;
+
 	virtual BOOL OnInitDialog() override;
 	virtual void PostNcDestroy();
 

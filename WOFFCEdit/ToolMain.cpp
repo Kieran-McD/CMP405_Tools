@@ -449,7 +449,7 @@ void ToolMain::MouseClick()
 	int id = m_d3dRenderer.MousePicking();
 	UpdateSelected = true;
 
-	if (id < 0 && !m_toolInputCommands.controlButton) {
+	if (id < 0 && !m_toolInputCommands.controlButton && id != -2) {
 		for (int i = m_selectedID.size() - 1; i > -1; i--) {
 
 			/*m_sceneGraph[m_selectedID[i]].scaX = 1;
