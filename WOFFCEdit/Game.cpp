@@ -309,16 +309,18 @@ void Game::Render()
 	//Render the batch,  This is handled in the Display chunk becuase it has the potential to get complex
 	m_displayChunk.RenderBatch(m_deviceResources);
 
+    //Checks if there is a selected object
     if (m_selectedID->size() > 0) {
         m_deviceResources->PIXBeginEvent(L"Draw Widget");
+        //Sets up so that the meshes that spawn will not use the depth
         context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
         context->OMSetDepthStencilState(m_states->DepthNone(), 0);
         context->RSSetState(m_states->CullCounterClockwise());
+        //Loops through all the widgers
         for (int i = 0; i < m_widgetList.size(); i++) {
 
             DisplayObject object = m_widgetList[i];
             const XMVECTORF32 scale = { object.m_scale.x,object.m_scale.y,object.m_scale.z };
-
             const XMVECTORF32 translate = { object.m_position.x, object.m_position.y, object.m_position.z };
 
 
@@ -701,6 +703,7 @@ void Game::CreateWindowSizeDependentResources()
 	
 }
 
+//Handles mouse clicking in world
 int Game::MousePicking()
 {
     float rayDistance = INFINITY;
@@ -712,6 +715,7 @@ int Game::MousePicking()
     Vector3 mouseForward = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 1.f);
     int id = 0;
 
+    //Checks to see if the mouse collided with a widget
     for (int i = 0; i < m_widgetList.size(); i++) {
         rayDistance = INFINITY;
         DisplayObject currentobject = m_widgetList.at(i);
@@ -739,6 +743,7 @@ int Game::MousePicking()
         }
     }
 
+    //Checks to see if the mouse clicked an object in the world
     for (int i = 0; i < m_displayList.size(); i++) {
       
         //Objects tranlation data
@@ -750,20 +755,20 @@ int Game::MousePicking()
         XMMATRIX localWorldMatrix = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, objectScale, g_XMZero, objectRotation, objectTranslation);
 
         //Unprojects the mouse into the world
-        XMVECTOR mousePos = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
-        XMVECTOR mousePosDirection = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+        XMVECTOR nearPlane = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
+        XMVECTOR farPlane = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
 
-
-        XMVECTOR pickingVector = (mousePosDirection - mousePos);
+        XMVECTOR pickingVector = (farPlane - nearPlane);
         pickingVector = XMVector3Normalize(pickingVector);
-        Ray ray = Ray(mousePos, pickingVector);
+        Ray ray = Ray(nearPlane, pickingVector);
 
+        //Below handles ray intersection and checks for the closest intersection
         for (int j = 0; j < m_displayList[i].m_model->meshes.size(); j++) {
             //Ray trace intersection
             if (ray.Intersects(m_displayList[i].m_model->meshes[j]->boundingBox, rayDistance)) {
                 //Checks the current ray trace distance with the closest distance
                 if (rayDistance < closestDistance) {
-                    closestDistance = Vector3::Distance(m_displayList[i].m_position, mousePos);
+                    closestDistance = Vector3::Distance(m_displayList[i].m_position, nearPlane);
                     currentDisplaySelected = &m_displayList[i];
                     id = i;
                 }
@@ -777,13 +782,6 @@ int Game::MousePicking()
     if (!currentDisplaySelected) return -1;
 
     return id;
-}
-
-void Game::ObjectSelect()
-{
-    
-    m_displayList[0].m_model->meshes[0];
-
 }
 
 void Game::OnDeviceLost()

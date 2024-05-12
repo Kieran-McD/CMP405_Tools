@@ -57,9 +57,9 @@ void Camera::Update(InputCommands Input)
 	{
 		m_camOrientation.y += m_camRotRate;
 	}
+
+	//Checks if right click is down to move the camera
 	if (Input.mouseRightButton) {
-
-
 		m_camOrientation.y += Input.mouseXDrag;
 		m_camOrientation.x -= Input.mouseYDrag;
 		//m_camLookAt = Vector3(0, 0, 0);
@@ -75,6 +75,8 @@ void Camera::Update(InputCommands Input)
 		m_camRight.Normalize();
 		m_camLookDirection.Cross(m_camRight, m_camUp);
 		m_camUp.Normalize();
+
+		//BELOW HANDLES MOVEMENT
 		//process input and update stuff
 		if (Input.forward)
 		{
@@ -94,10 +96,9 @@ void Camera::Update(InputCommands Input)
 		}
 		if (Input.right)
 		{
-			Vector3 direction = m_camLookAt - m_camPosition;
-			direction.Normalize();
-			m_camPosition -= direction * m_movespeed;
-			
+			//Vector3 direction = m_camLookAt - m_camPosition;
+			//direction.Normalize();
+			//m_camPosition -= direction * m_movespeed;
 
 			m_camPosition += m_camRight * m_movespeed;
 		}
@@ -153,6 +154,7 @@ Matrix Camera::GetProjectionMatrix()
 	return m_camProjection;
 }
 
+//ArcballMotion
 void Camera::ArcBallMotion(InputCommands Input)
 {
 	// step 1 : Calculate the amount of rotation given the mouse movement.

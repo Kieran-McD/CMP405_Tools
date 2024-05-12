@@ -289,17 +289,11 @@ void ToolMain::onActionRebuildScene()
 
 void ToolMain::Tick(MSG *msg)
 {
-	//do we have a selection
-	//do we have a mode
-	//are we clicking / dragging /releasing
-	//has something changed
-		//update Scenegraph
-		//add to scenegraph
-		//resend scenegraph to Direct X renderer	
+	
+	//INPUTS
 	if (m_toolInputCommands.deleteObjectsInScene && m_toolInputCommandsLastFrame.deleteObjectsInScene != m_toolInputCommands.deleteObjectsInScene) {
 		DeleteObjects();
 	}
-
 	if (m_toolInputCommands.copyObjectsInScene && m_toolInputCommandsLastFrame.copyObjectsInScene != m_toolInputCommands.copyObjectsInScene) {
 		Copy();
 	}
@@ -313,9 +307,10 @@ void ToolMain::Tick(MSG *msg)
 		MouseClick();
 	}
 
+	//UPDATE
 	//Renderer Update Call
 	m_d3dRenderer.Tick(&m_toolInputCommands);
-	//onActionRebuildScene();
+
 	m_toolInputCommands.mouseXDrag = 0;
 	m_toolInputCommands.mouseYDrag = 0;
 
@@ -345,9 +340,7 @@ void ToolMain::UpdateInput(MSG * msg)
 		break;
 	case WM_MOUSEHOVER:
 		break;
-	case WM_LBUTTONDOWN:	//mouse button down,  you will probably need to check when its up too
-		//set some flag for the mouse button in inputcommands
-		//Checks if the mouse click was clicked on the main window
+	case WM_LBUTTONDOWN:
 		if (msg->hwnd == m_toolHandle) {
 			m_toolInputCommands.mouseLeftButton = true;
 			m_toolInputCommands.mouseLeftButtonDown = true;
@@ -507,6 +500,7 @@ void ToolMain::MouseClick()
 
 }
 
+//Used to check if objects where deleted
 bool ToolMain::UpdateDeleteObjects() {
 	if (m_toolInputCommands.deleteObjectsInScene && m_toolInputCommandsLastFrame.deleteObjectsInScene != m_toolInputCommands.deleteObjectsInScene) {
 		return true;
@@ -517,6 +511,7 @@ bool ToolMain::UpdateDeleteObjects() {
 	return false;
 }
 
+//Used to check if the list of objects needs updated
 bool ToolMain::UpdateList()
 {
 	if (m_toolInputCommands.pasteObjectsInScene && m_toolInputCommandsLastFrame.pasteObjectsInScene != m_toolInputCommands.pasteObjectsInScene) {
@@ -542,6 +537,7 @@ void ToolMain::DeleteObjects()
 	onActionRebuildScene();
 }
 
+//Copies the current selected objects
 void ToolMain::Copy()
 {
 	copiedObjectData.clear();
@@ -551,12 +547,14 @@ void ToolMain::Copy()
 
 }
 
+//Cuts the current selected objects
 void ToolMain::Cut()
 {
 	Copy();
 	DeleteObjects();
 }
 
+//Pastes the current copied/cut objects
 void ToolMain::Paste()
 {
 	for (int i = 0; i < copiedObjectData.size(); i++) {
