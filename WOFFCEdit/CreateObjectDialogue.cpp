@@ -38,7 +38,7 @@ void CreateObjectDialogue::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT7, m_posZEdit);
 	DDX_Control(pDX, IDC_EDIT8, m_rotXEdit);
 	DDX_Control(pDX, IDC_EDIT9, m_rotYEdit);
-	DDX_Control(pDX, IDC_EDIT10, m_rotZEdit);
+	DDX_Control(pDX, IDC_EDIT11, m_rotZEdit);
 }
 
 void CreateObjectDialogue::End()
@@ -122,6 +122,7 @@ void CreateObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph)
 	//Setup scale boxes
 	m_scaleXEdit.SetLimitText(7);
 	m_scaleXEdit.SetWindowTextW(_T("1"));
+	
 	m_scaleYEdit.SetLimitText(7);
 	m_scaleYEdit.SetWindowTextW(_T("1"));
 	m_scaleZEdit.SetLimitText(7);
