@@ -55,7 +55,9 @@ public:
 	int MousePicking();
 
 	void UpdateWidgets();
-	void UpdateMoveWidget();
+	bool UpdateMoveWidget(InputCommands* Input);
+	
+	void UpdateSceneObjects(std::vector<SceneObject>* SceneGraph);
 
 #ifdef DXTK_AUDIO
 	void NewAudioDevice();
@@ -89,6 +91,7 @@ private:
 	//control variables
 	bool m_grid;							//grid rendering on / off
 	bool m_widgetClicked;
+	int m_currentWidgetSelected;
 
 	Vector3 testPosition;
 	// Device resources.

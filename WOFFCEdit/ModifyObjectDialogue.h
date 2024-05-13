@@ -64,7 +64,8 @@ public:
 
 	void RetrieveData(std::vector<SceneObject>* SceneGraph, std::vector<int>* SelectedID);
 	void UpdateObjectList();
-
+	void UpdateParameters();
+	void UpdateDelete();
 	afx_msg void OnBnClickedOk();
 
 	bool RebuildScene;

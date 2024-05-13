@@ -22,6 +22,10 @@ public:
 	Vector3 GetCamPosition() { return m_camPosition; }
 
 	Vector3 GetCamLookAtDir() { return m_camLookDirection; }
+
+	Vector3 GetCamRightDir() { return m_camRight; }
+	
+	Vector3 GetCamUpDir() { return m_camUp; }
 private:
 	
 	void ArcBallMotion(InputCommands Input);

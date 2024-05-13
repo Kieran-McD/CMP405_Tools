@@ -61,7 +61,7 @@ void ModifyObjectDialogue::End()
 //Updates the objects position
 void ModifyObjectDialogue::UpdateObjectPosition()
 {
-	if (m_currentSelection < 1) return;
+	if (m_currentSelection < 0) return;
 	
 	m_sceneGraph->at(m_currentSelection).posX = m_posXEdit.GetFloatValue();
 	m_sceneGraph->at(m_currentSelection).posY = m_posYEdit.GetFloatValue();
@@ -74,7 +74,7 @@ void ModifyObjectDialogue::UpdateObjectPosition()
 //Updates the object scale
 void ModifyObjectDialogue::UpdateObjectScale()
 {
-	if (m_currentSelection < 1) return;
+	if (m_currentSelection < 0) return;
 
 	m_sceneGraph->at(m_currentSelection).scaX = m_scaleXEdit.GetFloatValue();
 	m_sceneGraph->at(m_currentSelection).scaY = m_scaleYEdit.GetFloatValue();
@@ -87,7 +87,7 @@ void ModifyObjectDialogue::UpdateObjectScale()
 //Updates the rotation of the object
 void ModifyObjectDialogue::UpdateObjectRotation()
 {
-	if (m_currentSelection < 1) return;
+	if (m_currentSelection < 0) return;
 
 	m_sceneGraph->at(m_currentSelection).rotX = m_rotXEdit.GetFloatValue();
 	m_sceneGraph->at(m_currentSelection).rotY = m_rotYEdit.GetFloatValue();
@@ -100,7 +100,7 @@ void ModifyObjectDialogue::UpdateObjectRotation()
 //Updates the objects models path
 void ModifyObjectDialogue::UpdateObjectModel()
 {
-	if (m_currentSelection < 1) return;
+	if (m_currentSelection < 0) return;
 
 	CString text;
 	m_modelComboBox.GetWindowTextW(text);
@@ -113,7 +113,7 @@ void ModifyObjectDialogue::UpdateObjectModel()
 //Updates the object texture
 void ModifyObjectDialogue::UpdateObjectTexture()
 {
-	if (m_currentSelection < 1) return;
+	if (m_currentSelection < 0) return;
 
 	CString text;
 	m_textureComboBox.GetWindowTextW(text);
@@ -274,12 +274,27 @@ void ModifyObjectDialogue::RetrieveData(std::vector<SceneObject>* SceneGraph, st
 void ModifyObjectDialogue::UpdateObjectList()
 {
 	m_selectedObjectBox.ResetContent();
-
+	m_currentSelection = -1;
 	for (int i = 0; i < m_selectedObjectID->size(); i++) {
 		CString text;
 		text.Format(_T("%d"), m_sceneGraph->at(m_selectedObjectID->at(i)).ID);
 		m_selectedObjectBox.AddString(text);
 	}
+}
+
+void ModifyObjectDialogue::UpdateParameters()
+{
+	int index = m_selectedObjectBox.GetCurSel();
+	if (m_selectedObjectBox.GetCurSel() < 0) return;
+
+	UpdateSelectedObject();
+}
+
+void ModifyObjectDialogue::UpdateDelete()
+{
+	m_currentSelection = -1;
+	m_selectedObjectBox.ResetContent();
+
 }
 
 void ModifyObjectDialogue::OnBnClickedOk()

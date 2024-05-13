@@ -118,7 +118,7 @@ void Game::UpdateWidgets()
 {
     if (m_selectedID->size() > 0) {
         for (int i = 0; i < m_widgetList.size(); i++) {
-
+            //Sets teh appropriate rotation/position of the widgets
             switch (i)
             {
             case 0:
@@ -136,11 +136,14 @@ void Game::UpdateWidgets()
 
             DisplayObject object = m_widgetList[i];
 
+            //Gets the direction from the camera to the objects
             Vector3 direction = Vector3(object.m_position.x, object.m_position.y, object.m_position.z) - m_cam.GetCamPosition();
             direction.Normalize();
 
+            //Places the widget 3 units in the direction of the object
             m_widgetList[i].m_position = m_cam.GetCamPosition() + direction * 3.f;
 
+            //Sets the position of the widgets
             switch (i)
             {
             case 0:
@@ -158,39 +161,70 @@ void Game::UpdateWidgets()
     }
 }
 
-void Game::UpdateMoveWidget()
+bool Game::UpdateMoveWidget(InputCommands* Input)
 {
-    if (m_selectedID->size() < 1) return;
-    if (!m_InputCommands.mouseLeftButtonDown) return;
-    Vector3 point;
+    if (m_selectedID->size() < 1) return false;
+    if (m_currentWidgetSelected < 0) return false;
 
-    //Gets the mouse position in screen and forward
-    Vector3 mouseScreenPos = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 0);
-    Vector3 mouseForward = Vector3(m_InputCommands.mouseX, m_InputCommands.mouseY, 1.f);
-    int id = 0;
+    //Checks if the scene objects needs to updates
+    if (!Input->mouseLeftButton && m_widgetClicked) {
+        m_widgetClicked = false;
+        return true;
+    }
 
-    DisplayObject currentobject = m_widgetList.at(0);
-    //Objects tranlation data
-    XMVECTOR  objectScale = { currentobject.m_scale.x,		currentobject.m_scale.y,		currentobject.m_scale.z };
-    XMVECTOR  objectTranslation = { currentobject.m_position.x,	currentobject.m_position.y,	currentobject.m_position.z };
-    XMVECTOR  objectRotation = Quaternion::CreateFromYawPitchRoll(currentobject.m_orientation.y * 3.1415 / 180, currentobject.m_orientation.x * 3.1415 / 180, currentobject.m_orientation.z * 3.1415 / 180);
-
-    //Get World Matrix of Current Object
-    XMMATRIX localWorldMatrix = m_world * XMMatrixTransformation(g_XMZero, Quaternion::Identity, objectScale, g_XMZero, objectRotation, objectTranslation);
-
-    //Unprojects the mouse into the world
-    Vector3  nearPlane = XMVector3Unproject(mouseScreenPos, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
-    Vector3  farPlane = XMVector3Unproject(mouseForward, 0, 0, m_windowSize.right, m_windowSize.bottom, m_deviceResources->GetScreenViewport().MinDepth, m_deviceResources->GetScreenViewport().MaxDepth, m_cam.GetProjectionMatrix(), m_cam.GetViewMatrix(), localWorldMatrix);
-
-    //Vector3  pickingVector = (farPlane - nearPlane);
-    //pickingVector = XMVector3Normalize(pickingVector);
-    float dotPro;
-
-    dotPro = (nearPlane - testPosition).Dot(farPlane - nearPlane) / (farPlane - nearPlane).LengthSquared();
-    point = nearPlane + dotPro * (farPlane - nearPlane);
+    if (!Input->mouseLeftButton) return false;
     
-    m_displayList.at(m_selectedID->at(0)).m_position = point;
 
+    Vector3 changeInMovement = Vector3(0, 0, 0);
+    float direction;
+    switch (m_currentWidgetSelected)
+    {
+        //X Axis transform
+    case 0:
+        direction = m_cam.GetCamRightDir().Dot(Vector3(1, 0, 0));
+        changeInMovement = Vector3(m_InputCommands.mouseXDrag / 50.f, 0, 0) * direction;
+        direction = m_cam.GetCamUpDir().Dot(Vector3(1, 0, 0));
+        changeInMovement += Vector3(-m_InputCommands.mouseYDrag / 50.f, 0, 0) * -direction;
+        break;
+        //Y axis transform
+    case 1:
+        direction = m_cam.GetCamRightDir().Dot(Vector3(0, 1, 0));
+        changeInMovement = Vector3(0, m_InputCommands.mouseXDrag / 50.f, 0) * direction;
+        direction = m_cam.GetCamUpDir().Dot(Vector3(0, 1, 0));
+        changeInMovement += Vector3(0, m_InputCommands.mouseYDrag / 50.f, 0) * direction;
+        break;
+    case 2:
+        //Z axis transform
+        direction = m_cam.GetCamRightDir().Dot(Vector3(0, 0, 1));
+        changeInMovement = Vector3(0, 0, m_InputCommands.mouseXDrag / 50.f) * direction;
+        direction = m_cam.GetCamUpDir().Dot(Vector3(0, 0, 1));
+        changeInMovement += Vector3(0, 0, m_InputCommands.mouseYDrag / 50.f) * direction;
+        break;
+    }
+
+    //Updates display objects positon
+    for (int i = 0; i < m_selectedID->size(); i++) {
+        m_displayList.at(m_selectedID->at(i)).m_position += changeInMovement;
+    }
+    return false;
+}
+
+//Used to set the scene tranform data to the display object data, when display object is used to change the data
+void Game::UpdateSceneObjects(std::vector<SceneObject>* SceneGraph)
+{
+    for (int i = 0; i < m_selectedID->size(); i++) {
+         SceneGraph->at(m_selectedID->at(i)).posX = m_displayList.at(m_selectedID->at(i)).m_position.x;
+         SceneGraph->at(m_selectedID->at(i)).posY = m_displayList.at(m_selectedID->at(i)).m_position.y;
+         SceneGraph->at(m_selectedID->at(i)).posZ = m_displayList.at(m_selectedID->at(i)).m_position.z;
+
+         SceneGraph->at(m_selectedID->at(i)).rotX = m_displayList.at(m_selectedID->at(i)).m_orientation.x;
+         SceneGraph->at(m_selectedID->at(i)).rotY = m_displayList.at(m_selectedID->at(i)).m_orientation.y;
+         SceneGraph->at(m_selectedID->at(i)).rotZ = m_displayList.at(m_selectedID->at(i)).m_orientation.z;
+
+         SceneGraph->at(m_selectedID->at(i)).scaX = m_displayList.at(m_selectedID->at(i)).m_scale.x;
+         SceneGraph->at(m_selectedID->at(i)).scaY = m_displayList.at(m_selectedID->at(i)).m_scale.y;
+         SceneGraph->at(m_selectedID->at(i)).scaZ = m_displayList.at(m_selectedID->at(i)).m_scale.z;
+    }
 }
 
 // Updates the world.
@@ -340,7 +374,7 @@ void Game::Render()
     //CAMERA POSITION ON HUD
     m_sprites->Begin();
     WCHAR   Buffer[256];
-    std::wstring var = L"Mouse X: " + std::to_wstring(m_InputCommands.mouseX) + L"Mouse Y: " + std::to_wstring(m_InputCommands.mouseY);
+    std::wstring var = L"Mouse X: " + std::to_wstring(m_InputCommands.mouseLeftButton) + L"Mouse Y: " + std::to_wstring(m_InputCommands.mouseY);
     m_font->DrawString(m_sprites.get(), var.c_str(), XMFLOAT2(100, 10), Colors::Yellow);
     m_sprites->End();
 
@@ -548,7 +582,7 @@ void Game::BuildDisplayList(std::vector<SceneObject> * SceneGraph)
     }
 
     numObjects = 3;
-
+    //Below is used to create display objects for the widget
     for (int i = 0; i < numObjects; i++)
     {
         //create a temp display object that we will populate then append to the display list.
@@ -739,7 +773,11 @@ int Game::MousePicking()
         if (ray.Intersects(currentobject.m_model->meshes[0]->boundingBox, rayDistance)) {
             m_widgetClicked = true;
             testPosition = nearPlane + pickingVector * rayDistance;
+            m_currentWidgetSelected = i;
             return -2;
+        }
+        else {
+            m_currentWidgetSelected = -1;
         }
     }
 

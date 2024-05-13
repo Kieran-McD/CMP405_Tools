@@ -37,12 +37,15 @@ public:	//variables
 	std::vector<SceneObject>    m_sceneGraph;	//our scenegraph storing all the objects in the current chunk
 	ChunkObject					m_chunk;		//our landscape chunk
 	std::vector<int> m_selectedID;
-	int m_selectedObject;						//ID of current Selection
+	int m_selectedObject;
+	//ID of current Selection
+	bool m_updatedSceneData;
 	bool UpdateSelected;
-private:	//methods
+
+
+
+private: //Methods
 	void	onContentAdded();
-
-
 		
 private:	//variables
 	HWND	m_toolHandle;		//Handle to the  window

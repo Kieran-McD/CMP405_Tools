@@ -305,7 +305,12 @@ void ToolMain::Tick(MSG *msg)
 	}
 	if (m_toolInputCommands.mouseLeftButtonDown) {
 		MouseClick();
+			}
+	if (m_d3dRenderer.UpdateMoveWidget(&m_toolInputCommands)) {
+		m_d3dRenderer.UpdateSceneObjects(&m_sceneGraph);
+		m_updatedSceneData = true;
 	}
+
 
 	//UPDATE
 	//Renderer Update Call
@@ -358,9 +363,10 @@ void ToolMain::UpdateInput(MSG * msg)
 		m_toolInputCommands.mouseRightButton = false;
 		ShowCursor(true);
 		break;
-	case WM_MOUSELEAVE:
-		m_toolInputCommands.mouseRightButton = false;
-		m_toolInputCommands.mouseLeftButton = false;
+	case WM_NCMOUSELEAVE:
+		//m_toolInputCommands.mouseRightButton = false;
+		//m_toolInputCommands.mouseLeftButton = false;
+		break;
 	}
 	
 
@@ -440,7 +446,7 @@ void ToolMain::UpdateLastFrameInput()
 void ToolMain::MouseClick()
 {
 	int id = m_d3dRenderer.MousePicking();
-	UpdateSelected = true;
+	
 
 	if (id < 0 && !m_toolInputCommands.controlButton && id != -2) {
 		for (int i = m_selectedID.size() - 1; i > -1; i--) {
@@ -453,7 +459,7 @@ void ToolMain::MouseClick()
 
 		}
 
-
+		UpdateSelected = true;
 		onActionRebuildScene();
 		return;
 	}
@@ -495,7 +501,7 @@ void ToolMain::MouseClick()
 		//m_sceneGraph[id].scaY = 5;
 		//m_sceneGraph[id].scaZ = 5;
 	}
-
+	UpdateSelected = true;
 	onActionRebuildScene();
 
 }

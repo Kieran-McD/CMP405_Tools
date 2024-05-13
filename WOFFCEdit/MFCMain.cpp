@@ -101,13 +101,19 @@ int MFCMain::Run()
 			//int ID = m_ToolSystem.getCurrentSelectionID();
 			//std::wstring statusString = L"Selected Object: " + std::to_wstring(ID);
 
-			if (m_ToolSelectDialogue) {
-				if (m_ToolSystem.UpdateDeleteObjects()) {
-					m_ToolSelectDialogue.DeleteSelected();
-				}
+			//Check for deleted objects
+			if (m_ToolSystem.UpdateDeleteObjects()) {
+				if (m_ToolSelectDialogue) m_ToolSelectDialogue.DeleteSelected();
+				if (m_ToolModifyObjectDialogue) m_ToolModifyObjectDialogue.UpdateDelete();
 			}
 		
 			m_ToolSystem.Tick(&msg);
+
+			//Check for scene data update from tools
+			if (m_ToolSystem.m_updatedSceneData) {
+				if (m_ToolModifyObjectDialogue) m_ToolModifyObjectDialogue.UpdateParameters();
+				m_ToolSystem.m_updatedSceneData = false;
+			}
 
 			//Updates the selected
 			if (m_ToolSystem.UpdateSelected) {
